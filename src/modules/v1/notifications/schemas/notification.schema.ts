@@ -5,6 +5,15 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 export class Notification extends Document {
   @Prop({ type: Types.ObjectId, ref: "User" })
   user: Types.ObjectId;
+
+  @Prop({ type: String, required: true })
+  title: string;
+
+  @Prop({ type: String, required: true })
+  body: string;
+
+  @Prop({ type: Date, required: false })
+  readAt: Date;
 }
 
 export type NotificationDocument = HydratedDocument<Notification>;
