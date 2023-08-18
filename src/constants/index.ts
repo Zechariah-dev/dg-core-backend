@@ -1,0 +1,3 @@
+export enum Services {
+  GATEWAY_SESSION_MANAGER = "GATEWAY_SESSION_MANAGER",
+}
