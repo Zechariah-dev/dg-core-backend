@@ -22,7 +22,7 @@ export class FavoritesRepository extends BaseRepository<FavoriteDocument> {
       },
       {
         path: "product",
-        select: "title images _id",
+        select: "title images _id price description",
       },
     ]);
   }
@@ -35,7 +35,7 @@ export class FavoritesRepository extends BaseRepository<FavoriteDocument> {
       },
       {
         path: "product",
-        select: "title images _id",
+        select: "title images _id price description",
       },
     ]);
   }

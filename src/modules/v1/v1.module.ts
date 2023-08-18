@@ -10,6 +10,7 @@ import { FavoritesModule } from "./favorites/favorites.module";
 import { GatewayModule } from "./gateway/gateway.module";
 import { ConversationsModule } from "./conversations/conversations.module";
 import { MessagesModule } from "./messages/messages.module";
+import { NotificationsModule } from "./notifications/notifications.module";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MessagesModule } from "./messages/messages.module";
     GatewayModule,
     ConversationsModule,
     MessagesModule,
+    NotificationsModule,
   ],
 })
 export class V1Module {}

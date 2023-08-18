@@ -126,7 +126,7 @@ export class AuthController {
 
     return {
       user,
-      message: "Business Credentials has been uploaeded successfully",
+      message: "Business Credentials has been uploaded successfully",
     };
   }
 
@@ -205,7 +205,7 @@ export class AuthController {
 
   @Get("/resend-verification")
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: "20, Email verification resend succcessfully" })
+  @ApiOkResponse({ description: "20, Email verification resend successfully" })
   async resendEmailVerification(@Query("email") email: string) {
     await this.authService.forwardEmailVerificationMail(email);
 
