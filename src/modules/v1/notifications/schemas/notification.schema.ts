@@ -14,6 +14,9 @@ export class Notification extends Document {
 
   @Prop({ type: Date, required: false })
   readAt: Date;
+
+  @Prop({ type: Date, required: false })
+  deletedAt: Date;
 }
 
 export type NotificationDocument = HydratedDocument<Notification>;

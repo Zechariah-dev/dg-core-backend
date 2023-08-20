@@ -61,4 +61,11 @@ export abstract class BaseRepository<T extends Document> {
   public async deleteOne(query: FilterQuery<T>) {
     return this.model.findOneAndDelete({ ...query });
   }
+
+  public async softDelete(query: FilterQuery<T>) {
+    return this.model.findByIdAndUpdate(
+      { ...query },
+      { deletedAt: new Date() }
+    );
+  }
 }
