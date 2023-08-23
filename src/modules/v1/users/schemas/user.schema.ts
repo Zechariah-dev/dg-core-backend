@@ -25,7 +25,7 @@ export class User extends Document {
   @Prop({ type: String })
   password: string;
 
-  @Prop({ type: String, required: true, enum: APP_ROLES })
+  @Prop({ type: String, enum: APP_ROLES })
   role: string;
 
   @Prop({ type: String })
@@ -61,8 +61,6 @@ export class User extends Document {
   @Prop({ type: Boolean })
   termsAndCondition: boolean;
 
- 
-
   @Prop({ type: Date })
   dateOfBirth: Date;
 
@@ -78,6 +76,17 @@ export class User extends Document {
 
   @Prop({ type: Types.ObjectId, ref: "Business" })
   business: Types.ObjectId;
+
+  @Prop({
+    type: {
+      accessToken: String,
+      refreshToken: String,
+    },
+  })
+  oauthCredentials: {
+    accessToken: string;
+    refreshToken: string;
+  };
 }
 
 export type UserDocument = User & Document;

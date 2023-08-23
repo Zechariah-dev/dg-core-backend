@@ -12,6 +12,7 @@ import { BusinessRepository } from "../business/business.repository";
 import { Business, BusinessSchema } from "../business/schemas/business.schema";
 import { AwsS3Service } from "src/common/services/aws-s3.service";
 import { BusinessService } from "../business/business.service";
+import { GoogleStrategy } from "./google.strategy";
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { BusinessService } from "../business/business.service";
     UsersRepository,
     BusinessRepository,
     JwtStrategy,
+    GoogleStrategy,
     AwsS3Service,
     BusinessService,
   ],

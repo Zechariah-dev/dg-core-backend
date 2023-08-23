@@ -205,7 +205,7 @@ export class AuthController {
 
   @Get("/resend-verification")
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: "20, Email verification resend successfully" })
+  @ApiOkResponse({ description: "200, Email verification resend successfully" })
   async resendEmailVerification(@Query("email") email: string) {
     await this.authService.forwardEmailVerificationMail(email);
 
@@ -240,8 +240,20 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(GoogleOAuthGuard)
   async googleOauthRedirect(@Req() req) {
-    // eslint-disable-next-line no-console
-    console.log(req);
+    const userExists = await this.usersService.findByEmail(req.user.email);
+
+    if (userExists) {
+      throw new BadRequestException("User email address already in user");
+    }
+
+    const user = await this.usersService.createOauthUser(req.user);
+
+    const tokens = await this.authService.generateTokens({
+      userId: user._id,
+      email: user.email,
+    });
+
+    return { message: "Google auth login successful", user, tokens };
   }
 
   @Post("/reset-password")

@@ -83,4 +83,17 @@ export class UsersService {
       { password: hashedPassword }
     );
   }
+
+  async createOauthUser(payload: any) {
+    return this.usersRepository.create({
+      fullName: payload.fullName,
+      email: payload.email,
+      image: payload.image,
+      isVerified: true,
+      oauthCredentials: {
+        accessToken: payload.accessToken,
+        refreshToken: payload.refreshToken,
+      },
+    });
+  }
 }
