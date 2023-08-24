@@ -92,7 +92,10 @@ export class AuthController {
 
     const user = await this.usersService.updateProfile({ _id: id }, body);
 
-    await this.authService.forwardEmailVerificationMail(user.email);
+    await this.authService.forwardEmailVerificationMail(
+      user.email,
+      user.fullname.split(" ")[0]
+    );
 
     return {
       user,
@@ -207,7 +210,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: "200, Email verification resend successfully" })
   async resendEmailVerification(@Query("email") email: string) {
-    await this.authService.forwardEmailVerificationMail(email);
+    const userExist = await this.usersService.findByEmail(email);
+
+    if (!userExist) {
+      throw new BadRequestException("Invalid email address");
+    }
+
+    await this.authService.forwardEmailVerificationMail(
+      userExist.email,
+      userExist.fullname.split(" ")[0]
+    );
 
     return { message: "Email verification resend successfully" };
   }
@@ -258,13 +270,16 @@ export class AuthController {
 
   @Post("/reset-password")
   async resetPassword(@Body() { email }: ResetPasswordDto) {
-    const user = await this.usersService.findByEmail(email);
+    const userExist = await this.usersService.findByEmail(email);
 
-    if (!user) {
+    if (!userExist) {
       throw new NotFoundException("User account does not exist");
     }
 
-    const result = await this.authService.forwardPasswordResetMail(user.email);
+    const result = await this.authService.forwardPasswordResetMail(
+      userExist.email,
+      userExist.fullname.split(" ")[0]
+    );
 
     return result;
   }

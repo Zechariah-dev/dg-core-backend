@@ -54,7 +54,7 @@ export class MessagingGateway
 
   @OnEvent("message.create")
   async handleMessageCreateEvent(payload: CreateMessageResponse) {
-    this.logger.log("Gatewasy - message.create");
+    this.logger.log("Gateway - message.create");
     const { message } = payload;
 
     const { author, conversation } = await this.messagesRepository.findOne({

@@ -174,7 +174,7 @@
 
         .btn a {
             background-color: #ffffff;
-            border: solid 1px #3498db;
+            border: solid 1px #2B2D42;
             border-radius: 5px;
             box-sizing: border-box;
             color: #3498db;
@@ -189,12 +189,11 @@
         }
 
         .btn-primary table td {
-            background-color: #3498db;
+            background-color: #2B2D42;
         }
 
         .btn-primary a {
-            background-color: #3498db;
-            border-color: #3498db;
+            background-color: #2B2D42;
             color: #ffffff;
         }
 
@@ -307,6 +306,11 @@
                 max-width: 100% !important;
                 width: auto !important;
             }
+
+            table[class=body] .heading {
+                font-size: 20px;
+                text-align: center;
+            }
         }
 
         /* -------------------------------------
@@ -371,26 +375,37 @@
                             <td class="wrapper">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                     <tr>
+                                        <td align="center">
+                                            <a href="https://yourwebsite.com" target="_blank">
+                                                <img src="https://res.cloudinary.com/zechcloud/image/upload/v1692909241/Frame_2_egsdqj.svg"
+                                                    alt="Logo" width="100" style="display: block; margin: 30px auto;">
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td>
-                                            <p>Hi there,</p>
+
+                                            <p>Hi {{name}},</p>
+                                            <p>Welcome to the Digitextile! Please click the button below to
+                                                verify your email address and finalize the registration process.</p>
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                                                class="btn btn-primary">
+                                                class="btn btn-primary" style="margin: 20px auto;">
                                                 <tbody>
                                                     <tr>
-                                                        <td align="left">
-                                                            <table role="presentation" border="0" cellpadding="0"
-                                                                cellspacing="0">
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td> <a href={{url}}
-                                                                                target="_blank">Verify Email
+                                                        <td align="center">
+                                                            <a href="{{url}}" target="_blank">Verify Email</a>
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
+
+                                            <p>If the button above does not work, you can copy and paste the following
+                                                URL into your browser:</p>
+                                            <a href={{url}} style="margin-top: 10px">{{url}}</a>
                                         </td>
                                     </tr>
                                 </table>
+                                <!-- END MAIN CONTENT AREA -->
                             </td>
                         </tr>
 
@@ -403,14 +418,10 @@
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td class="content-block">
-                                    <span class="apple-link">Company Inc, 3 Abbey Road, San Francisco CA 94102</span>
+                                    <span class="apple-link">Department of Computer Science and Engineering,
+                                        Obafemi Awolowo University</span>
                                     <br> Don't like these emails? <a
                                         href="http://i.imgur.com/CScmqnj.gif">Unsubscribe</a>.
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="content-block powered-by">
-                                    Powered by <a href="http://htmlemail.io">HTMLemail</a>.
                                 </td>
                             </tr>
                         </table>

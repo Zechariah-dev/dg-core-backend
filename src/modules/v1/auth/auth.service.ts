@@ -42,7 +42,7 @@ export class AuthService {
     });
   }
 
-  async forwardPasswordResetMail(email: string) {
+  async forwardPasswordResetMail(email: string, name: string) {
     const token = this.jwtService.sign(
       { email },
       {
@@ -61,13 +61,14 @@ export class AuthService {
       template: "password_reset",
       context: {
         url,
+        name,
       },
     });
 
     this.logger.log("Password reset result", result);
   }
 
-  async forwardEmailVerificationMail(email: string) {
+  async forwardEmailVerificationMail(email: string, name: string) {
     const token = this.jwtService.sign(
       {
         email,
@@ -88,6 +89,7 @@ export class AuthService {
       template: "verify_email",
       context: {
         url,
+        name,
       },
     });
 
