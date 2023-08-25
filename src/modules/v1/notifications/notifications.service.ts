@@ -6,7 +6,7 @@ import { Types } from "mongoose";
 export class NotificationsService {
   constructor(
     private readonly notificationsRepository: NotificationsRepository
-  ) { }
+  ) {}
 
   async findByUser(user: Types.ObjectId) {
     return this.notificationsRepository.find({ user, deletedAt: null });
@@ -17,10 +17,16 @@ export class NotificationsService {
   }
 
   async updateOne(_id: Types.ObjectId, user: Types.ObjectId) {
-    return this.notificationsRepository.findOneAndUpdate({ _id, user }, { readAt: new Date() })
+    return this.notificationsRepository.findOneAndUpdate(
+      { _id, user },
+      { readAt: new Date() }
+    );
   }
 
   async read(_id: Types.ObjectId, user: Types.ObjectId) {
-    return this.notificationsRepository.findOneAndUpdate({ _id, user }, { readAt: new Date() })
+    return this.notificationsRepository.findOneAndUpdate(
+      { _id, user },
+      { readAt: new Date() }
+    );
   }
 }

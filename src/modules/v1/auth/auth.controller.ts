@@ -41,6 +41,7 @@ import { CacUploadDto } from "./dtos/cac-upload.dto";
 import { AwsS3Service } from "../../../common/services/aws-s3.service";
 import { BusinessService } from "../business/business.service";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Controller("auth")
 @ApiTags("Auth")
@@ -49,7 +50,8 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
     private readonly awsS3Service: AwsS3Service,
-    private readonly businessService: BusinessService
+    private readonly businessService: BusinessService,
+    private readonly events: EventEmitter2
   ) {}
 
   @Post("/register")
@@ -96,6 +98,21 @@ export class AuthController {
       user.email,
       user.fullname.split(" ")[0]
     );
+
+    this.events.emit("notification.create", {
+      user: user._id,
+      title: "You are welcome",
+      body: `
+      We're thrilled to have you join us on this exciting journey. Get ready to explore a world of possibilities, connect with like-minded individuals, and unlock amazing features designed just for you.
+
+      Stay tuned for updates, tips, and special offers that will enhance your experience. If you have any questions or need assistance, our support team is here to help.
+      
+      Thank you for choosing OurApp. Let's make great things happen together! 🚀
+      
+      Best regards,
+      The OurApp Team
+      `,
+    });
 
     return {
       user,

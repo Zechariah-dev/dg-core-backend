@@ -12,6 +12,11 @@ import {
   ConversationSchema,
 } from "../conversations/schemas/conversation.schema";
 import { User, UserSchema } from "../users/schemas/user.schema";
+import {
+  Notification,
+  NotificationSchema,
+} from "../notifications/schemas/notification.schema";
+import { NotificationsRepository } from "../notifications/notification.repository";
 
 @Module({
   imports: [
@@ -28,6 +33,10 @@ import { User, UserSchema } from "../users/schemas/user.schema";
         name: User.name,
         schema: UserSchema,
       },
+      {
+        name: Notification.name,
+        schema: NotificationSchema,
+      },
     ]),
   ],
   providers: [
@@ -37,7 +46,7 @@ import { User, UserSchema } from "../users/schemas/user.schema";
     MessagesRepository,
     ConversationRepository,
     UsersRepository,
-    
+    NotificationsRepository
   ],
   exports: [MessagingGateway, GatewaySessionManager],
 })

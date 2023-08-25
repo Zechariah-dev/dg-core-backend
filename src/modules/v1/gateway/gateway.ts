@@ -11,9 +11,11 @@ import { GatewaySessionManager } from "./gateway.session";
 import { AuthenticatedSocket } from "../../../utils/interfaces";
 import { Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { CreateMessageResponse } from "src/types";
+import { CreateMessageResponse, NotificationResponse } from "../../../types";
 import { MessagesRepository } from "../messages/messages.repository";
 import { ConversationRepository } from "../conversations/conversation.repository";
+import { NotificationsRepository } from "../notifications/notification.repository";
+
 @WebSocketGateway({
   cors: {
     origin: "*",
@@ -30,7 +32,8 @@ export class MessagingGateway
   constructor(
     private readonly sessions: GatewaySessionManager,
     private readonly messagesRepository: MessagesRepository,
-    private readonly conversationsRepository: ConversationRepository
+    private readonly conversationsRepository: ConversationRepository,
+    private readonly notificationRepository: NotificationsRepository
   ) {}
 
   @WebSocketServer()
@@ -73,5 +76,14 @@ export class MessagingGateway
 
     if (authorSocket) authorSocket.emit("onMessage", payload);
     if (recipientSocket) recipientSocket.emit("onMessage", payload);
+  }
+
+  @OnEvent("notification.create")
+  async handleNotificationCreate(payload: NotificationResponse) {
+    const notification = await this.notificationRepository.create(payload);
+    const userSocket = this.sessions.getUserSocket(payload.user);
+
+    // emit new notification to user
+    userSocket.emit("notification", notification);
   }
 }
