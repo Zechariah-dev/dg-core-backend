@@ -19,9 +19,13 @@ export class ConversationsService {
   ) {}
 
   async getConversations(id: Types.ObjectId) {
-    return this.conversationRepository.find({
-      $or: [{ recipient: id }, { creator: id }],
-    });
+    return this.conversationRepository.find(
+      {
+        $or: [{ recipient: id }, { creator: id }],
+      },
+      null,
+      { sort: "-lastMessageSent" }
+    );
   }
 
   async findById(_id: Types.ObjectId) {
@@ -30,10 +34,10 @@ export class ConversationsService {
 
   async create(creator: User, params: createConversationDto) {
     const recipient = await this.usersRepository.findOne({
-      _id: params.reciepentId,
+      _id: params.recipientId,
     });
     if (!recipient) {
-      throw new NotFoundException("Reciepent does not exist");
+      throw new NotFoundException("Recipient does not exist");
     }
 
     if (creator._id.toString() === recipient._id.toString()) {
@@ -49,9 +53,10 @@ export class ConversationsService {
 
     const conversation = await this.conversationRepository.create({
       creator: creator._id,
-      reciepient: recipient._id,
+      recipient: recipient._id,
     });
-    const message = await this.messagesRepository.create({
+
+    await this.messagesRepository.create({
       content: params.content,
       author: creator._id,
       conversation: conversation._id,
