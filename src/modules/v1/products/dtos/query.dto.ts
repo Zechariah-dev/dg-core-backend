@@ -15,4 +15,17 @@ export class FetchProductQueryDto {
   @IsString()
   @IsOptional()
   category?: string;
+
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+
+  @IsString()
+  @IsOptional()
+  section?: string;
+
+  @IsString()
+  @IsOptional()
+  date?: string;
 }

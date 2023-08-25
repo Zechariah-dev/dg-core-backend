@@ -85,6 +85,23 @@ export class ProductsService {
       Object.assign(filter, { categories: { $in: [query.category] } });
     }
 
+    if (query.search) {
+      Object.assign(filter, { title: { $regex: query.search, $options: "i" } });
+    }
+
+    if (query.section) {
+      Object.assign(filter, { sections: { $in: [query.section] } });
+    }
+
+    if (query.date) {
+      const startDate = new Date(query.date);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(query.date);
+      endDate.setHours(23, 59, 59, 59);
+
+      Object.assign(filter, { createdAt: { $gte: startDate, $lte: endDate } });
+    }
+
     return filter;
   }
 }
