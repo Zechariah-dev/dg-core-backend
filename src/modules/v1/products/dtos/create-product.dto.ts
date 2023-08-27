@@ -112,4 +112,5 @@ export class CreateProductDto {
 
 export class CreateProductPayload extends CreateProductDto {
   seller: Types.ObjectId;
+  store?: Types.ObjectId
 }

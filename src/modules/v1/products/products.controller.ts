@@ -49,7 +49,11 @@ export class ProductsController {
   @Roles(APP_ROLES.CREATOR)
   @ApiCreatedResponse({ description: "201, created product successfully" })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async create(@Body() body: CreateProductDto, @Req() req: AuthRequest) {
+  async create(
+    @Body() body: CreateProductDto,
+    @Req() req: AuthRequest,
+    @Query("store") store?: Types.ObjectId
+  ) {
     // find existing product in user catalog
     const productExists = await this.productsService.findOne({
       title: body.title,
@@ -64,6 +68,7 @@ export class ProductsController {
     const product = await this.productsService.createProduct({
       ...body,
       seller: req.user._id,
+      store,
     });
 
     return { product, message: "Product created successfully" };

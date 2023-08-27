@@ -1,4 +1,4 @@
-import { Product, ProductDocument } from "./schemas/product.schema";
+import { Product, ProductDocument } from "./product.schema";
 import { BaseRepository } from "../../../common/repositories/base.repository";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
@@ -24,6 +24,10 @@ export class ProductsRepository extends BaseRepository<ProductDocument> {
         path: "categories",
         select: "name description image",
       },
+      {
+        path: "store",
+        select: "name _id",
+      },
     ]);
   }
 
@@ -39,6 +43,10 @@ export class ProductsRepository extends BaseRepository<ProductDocument> {
       {
         path: "categories",
         select: "name description image",
+      },
+      {
+        path: "store",
+        select: "name _id",
       },
     ]);
   }

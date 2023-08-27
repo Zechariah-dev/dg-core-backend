@@ -124,6 +124,9 @@ export class Product extends Document {
 
   @Prop({ type: Number, default: 0 })
   views: number;
+
+  @Prop({ type: Types.ObjectId, ref: "Store", required: false })
+  store: Types.ObjectId;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product).set(

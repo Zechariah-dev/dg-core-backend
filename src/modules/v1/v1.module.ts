@@ -11,6 +11,7 @@ import { GatewayModule } from "./gateway/gateway.module";
 import { ConversationsModule } from "./conversations/conversations.module";
 import { MessagesModule } from "./messages/messages.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { StoresModule } from "./stores/stores.module";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
     ConversationsModule,
     MessagesModule,
     NotificationsModule,
+    StoresModule
   ],
 })
 export class V1Module {}
