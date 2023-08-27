@@ -22,5 +22,13 @@ export class FetchStoreQueryDto {
 
   @IsString()
   @IsOptional()
+  category?: string;
+
+  @IsNumber()
+  @IsOptional()
+  rating?: number;
+
+  @IsString()
+  @IsOptional()
   date?: string;
 }

@@ -82,6 +82,14 @@ export class StoresService {
       Object.assign(filter, { sections: { $in: [query.section] } });
     }
 
+    if (query.category) {
+      Object.assign(filter, { category: query.category });
+    }
+
+    if (query.rating) {
+      Object.assign(filter, { rating: { $gte: query.rating } });
+    }
+
     if (query.date) {
       const startDate = new Date(query.date);
       startDate.setHours(0, 0, 0, 0);

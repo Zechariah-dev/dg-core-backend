@@ -20,10 +20,13 @@ export class FetchProductQueryDto {
   @IsOptional()
   search?: string;
 
-
   @IsString()
   @IsOptional()
   section?: string;
+
+  @IsNumber()
+  @IsOptional()
+  rating?: number;
 
   @IsString()
   @IsOptional()
