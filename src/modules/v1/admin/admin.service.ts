@@ -5,12 +5,14 @@ import { APP_ROLES } from "../../../common/interfaces/auth.interface";
 import { FetchUsersQueryDto } from "./dtos/query.dto";
 import { User } from "../users/schemas/user.schema";
 import { BusinessRepository } from "../business/business.repository";
+import { ForumsRepository } from "../forums/forums.repository";
 
 @Injectable()
 export class AdminService {
   constructor(
     private readonly usersRepository: UsersRepository,
-    private readonly businessRepository: BusinessRepository
+    private readonly businessRepository: BusinessRepository,
+    private readonly forumsRepository: ForumsRepository
   ) {}
 
   async approveCreatorAccount(_id: Types.ObjectId) {
@@ -47,17 +49,67 @@ export class AdminService {
     return this.usersRepository.findOne({ _id });
   }
 
-  private parseFilter(query: Partial<FetchUsersQueryDto>) {
+  async updateUserAccount(_id: Types.ObjectId, payload: UpdateQuery<User>) {
+    return this.usersRepository.findOneAndUpdate({ _id }, payload);
+  }
+
+  async findForums(query: any) {
+    const { page, limit, ...rest } = query;
+
+    const parsedFilter = this.parseFilter(rest);
+
+    console.log(parsedFilter);
+
+    return this.forumsRepository.find({ ...parsedFilter }, null, {
+      page,
+      skip: (page - 1) * limit,
+    });
+  }
+
+  async approveForum(_id: Types.ObjectId) {
+    return this.forumsRepository.findOneAndUpdate({ _id }, { approved: true });
+  }
+
+  private parseFilter(query: Partial<any>): object {
     const filter = {};
+
+    if (query.category) {
+      Object.assign(filter, { categories: { $in: [query.category] } });
+    }
+
+    if (query.search) {
+      Object.assign(filter, { title: { $regex: query.search, $options: "i" } });
+    }
+
+    if (query.section) {
+      Object.assign(filter, { sections: { $in: [query.section] } });
+    }
+
+    if (query.category) {
+      Object.assign(filter, { category: query.category });
+    }
+
+    if (query.rating) {
+      Object.assign(filter, { rating: { $gte: query.rating } });
+    }
 
     if (query.role) {
       Object.assign(filter, { role: query.role });
     }
 
-    return filter;
-  }
+    if (query.approved) {
+      Object.assign(filter, { approved: query.approved });
+    }
 
-  async updateUserAccount(_id: Types.ObjectId, payload: UpdateQuery<User>) {
-    return this.usersRepository.findOneAndUpdate({ _id }, payload);
+    if (query.date) {
+      const startDate = new Date(query.date);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(query.date);
+      endDate.setHours(23, 59, 59, 59);
+
+      Object.assign(filter, { createdAt: { $gte: startDate, $lte: endDate } });
+    }
+
+    return filter;
   }
 }

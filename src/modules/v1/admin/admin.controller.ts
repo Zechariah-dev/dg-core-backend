@@ -97,4 +97,27 @@ export class AdminController {
       message: "User account active status has been toggled successfully",
     };
   }
+
+  @Get("/forums")
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: "Forums fetched successfully" })
+  async getForums(@Query() query: any) {
+    const forums = await this.adminService.findForums(query);
+
+    return { forums, message: "Forums fetched successfully" };
+  }
+
+  @Patch("/forums/:id")
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: "200, User forum approved successfully" })
+  @ApiNotFoundResponse({ description: "400, Forum does not exist"})
+  async approveForum(@Param("id") id: Types.ObjectId) {
+    const forum = await this.adminService.approveForum(id);
+
+    if (!forum) {
+      throw new NotFoundException("Forum does not exist");
+    }
+
+    return { forum, message: "User forum approved successfully" };
+  }
 }

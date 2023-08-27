@@ -6,6 +6,8 @@ import { User, UserSchema } from "../users/schemas/user.schema";
 import { UsersRepository } from "../users/users.repository";
 import { BusinessRepository } from "../business/business.repository";
 import { Business, BusinessSchema } from "../business/schemas/business.schema";
+import { ForumsRepository } from "../forums/forums.repository";
+import { Forum, ForumSchema } from "../forums/schema/forum.schema";
 
 @Module({
   imports: [
@@ -18,9 +20,18 @@ import { Business, BusinessSchema } from "../business/schemas/business.schema";
         name: Business.name,
         schema: BusinessSchema,
       },
+      {
+        name: Forum.name,
+        schema: ForumSchema,
+      },
     ]),
   ],
   controllers: [AdminController],
-  providers: [AdminService, UsersRepository, BusinessRepository],
+  providers: [
+    AdminService,
+    UsersRepository,
+    BusinessRepository,
+    ForumsRepository,
+  ],
 })
 export class AdminModule {}
