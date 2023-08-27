@@ -6,7 +6,7 @@ import { Types } from "mongoose";
 
 declare global {
   interface AuthRequest extends Request {
-    user: User;
+    user: User | any;
   }
 }
 

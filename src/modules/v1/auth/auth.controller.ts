@@ -172,10 +172,6 @@ export class AuthController {
       throw new BadRequestException("Email is not verified");
     }
 
-    if (!user.isApproved && user.role === "creator") {
-      throw new BadRequestException("Account is yet to be approved");
-    }
-
     const isMatch = await bcrypt.compare(body.password, user.password);
 
     if (!isMatch) {

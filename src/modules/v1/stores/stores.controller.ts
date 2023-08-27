@@ -51,7 +51,7 @@ export class StoresController {
     @Body() createStoreBody: CreateStoreDto,
     @Req() req: AuthRequest
   ) {
-    if (!req.user.isApproved) {
+    if (!req.user.business.isApproved) {
       throw new UnauthorizedException("Your account is yet to be approved");
     }
 

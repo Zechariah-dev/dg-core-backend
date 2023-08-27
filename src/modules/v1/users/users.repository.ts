@@ -23,6 +23,7 @@ export class UsersRepository extends BaseRepository<UserDocument> {
       .populate([
         {
           path: "business",
+          select: "-__v -createdAt -updatedAt",
         },
       ])
       .lean();

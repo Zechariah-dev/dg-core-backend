@@ -67,8 +67,6 @@ export class User extends Document {
   @Prop({ type: Boolean, default: false })
   isVerified: boolean;
 
-  @Prop({ type: Boolean, default: false })
-  isApproved: boolean;
 
   // Allow admin disable user account
   @Prop({ type: Boolean, default: true })

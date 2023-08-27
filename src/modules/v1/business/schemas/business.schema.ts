@@ -17,6 +17,9 @@ export class Business extends Document {
 
   @Prop({ type: String })
   cacDocument: string;
+
+  @Prop({ type: Boolean, default: false })
+  isApproved: boolean;
 }
 
 export type BusinessDocument = HydratedDocument<Business>;
