@@ -21,6 +21,9 @@ export class Forum extends Document {
   @Prop({ type: String, required: true })
   content: string;
 
+  @Prop({ type: Boolean, default: false })
+  approved: boolean;
+
   @Prop({
     type: Types.ObjectId,
     required: true,
