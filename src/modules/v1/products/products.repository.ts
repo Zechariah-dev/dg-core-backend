@@ -1,4 +1,4 @@
-import { Product, ProductDocument } from "./product.schema";
+import { Product, ProductDocument } from "./schemas/product.schema";
 import { BaseRepository } from "../../../common/repositories/base.repository";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
