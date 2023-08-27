@@ -9,9 +9,6 @@ export class Conversation extends Document {
   @Prop({ type: Types.ObjectId, ref: "User" })
   recipient: Types.ObjectId;
 
-  @Prop({ type: [Types.ObjectId], ref: "Message" })
-  messages: Types.ObjectId[];
-
   @Prop({ type: Types.ObjectId, ref: "Message" })
   lastMessageSent: Types.ObjectId;
 

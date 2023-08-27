@@ -77,10 +77,29 @@ export class ConversationsController {
   async getConversation(@Param("id", ParseObjectIdPipe) id: Types.ObjectId) {
     const conversation = await this.conversationsService.findById(id);
 
-    if (conversation) {
+    if (!conversation) {
       throw new NotFoundException("Conversation does not exist");
     }
 
     return { message: "Conversation fetched successfully", conversation };
+  }
+
+  @Get("/check/:recipient")
+  @ApiOkResponse({
+    description: "200, Check conversation existence successfully",
+  })
+  async checkExistence(
+    @Param("recipient", ParseObjectIdPipe) recipient: Types.ObjectId,
+    @Req() req: AuthRequest
+  ) {
+    const conversation = await this.conversationsService.isCreated(
+      req.user._id,
+      recipient
+    );
+
+    return {
+      message: "Check conversation existence successfully",
+      conversation,
+    };
   }
 }

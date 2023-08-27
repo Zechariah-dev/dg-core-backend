@@ -55,6 +55,12 @@ export class MessagingGateway
     this.logger.log("Create Message", data);
   }
 
+  @OnEvent("conversation.create")
+  async handleConversationCreate(payload: any) {
+    const recipientSocket = this.sessions.getUserSocket(payload.recipient);
+    if (recipientSocket) recipientSocket.emit("onConversation", payload);
+  }
+
   @OnEvent("message.create")
   async handleMessageCreateEvent(payload: CreateMessageResponse) {
     this.logger.log("Gateway - message.create");

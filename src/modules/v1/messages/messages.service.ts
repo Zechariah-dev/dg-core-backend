@@ -20,8 +20,9 @@ export class MessagesService {
       throw new NotFoundException("Conversation does not exist");
     }
     const message = await this.messagesRepository.create(params);
-    conversation.lastMessageSent = message._id;
-    conversation = await conversation.save();
+    conversation = await this.conversationsService.updateOne(conversation._id, {
+      lastMessageSent: message._id,
+    });
 
     return { message, conversation };
   }

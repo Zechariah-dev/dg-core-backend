@@ -4,11 +4,12 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { ConversationRepository } from "./conversation.repository";
-import { Types } from "mongoose";
+import { UpdateQuery, Types } from "mongoose";
 import { createConversationDto } from "./dtos/create-conversation.dto";
 import { UsersRepository } from "../users/users.repository";
 import { User } from "../users/schemas/user.schema";
 import { MessagesRepository } from "../messages/messages.repository";
+import { Conversation } from "./schemas/conversation.schema";
 
 @Injectable()
 export class ConversationsService {
@@ -67,5 +68,12 @@ export class ConversationsService {
 
   async isCreated(creator: Types.ObjectId, recipient: Types.ObjectId) {
     return this.conversationRepository.findOne({ creator, recipient });
+  }
+
+  async updateOne(
+    _id: Types.ObjectId,
+    payload: UpdateQuery<Partial<Conversation>>
+  ) {
+    return this.conversationRepository.findOneAndUpdate({ _id }, payload);
   }
 }

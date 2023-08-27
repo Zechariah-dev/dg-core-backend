@@ -15,7 +15,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import ParseObjectIdPipe from "../../../pipes/parse-object-id.pipe";
 import { Types } from "mongoose";
 import { SkipThrottle, Throttle } from "@nestjs/throttler";
-import { ApiOkResponse } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiOkResponse } from "@nestjs/swagger";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Controller("messages")
@@ -29,6 +29,7 @@ export class MessagesController {
   @Throttle(5, 10)
   @Post("/:id")
   @HttpCode(HttpStatus.CREATED)
+  @ApiCreatedResponse({ description: "201, Message created successfully" })
   async createMessage(
     @Body() createMessagePayload: createMessageDto,
     @Param("id", ParseObjectIdPipe) id: Types.ObjectId,
@@ -40,7 +41,7 @@ export class MessagesController {
       ...createMessagePayload,
     });
     this.eventEmitter.emit("message.create", response);
-    return;
+    return { response, message: "Message created successfully" };
   }
 
   @SkipThrottle()
@@ -54,6 +55,6 @@ export class MessagesController {
   ) {
     const messages = await this.messagesService.getMessages(id);
 
-    return { messages, message: "Conversation messages fetched successfuly" };
+    return { messages, message: "Conversation messages fetched successfully" };
   }
 }
