@@ -32,6 +32,9 @@ import { UpdateForumDto } from "./dtos/update-forum.dto";
 import { CreateCommentDto } from "./dtos/create-comment.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { AwsS3Service } from "../../../common/services/aws-s3.service";
+import { Roles } from "../../../decorators/roles..decorator";
+import { APP_ROLES } from "../../../common/interfaces/auth.interface";
+import { RolesGuard } from "../../../guards/role.guard";
 
 @Controller("forums")
 @ApiTags("Forum")
@@ -189,5 +192,34 @@ export class ForumsController {
     );
 
     return { forum, message: "Forum comment has been added successfully" };
+  }
+
+  @Get("/users/engaged")
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({
+    description: "200, User engaged forums fetched successfully",
+  })
+  async getUserEngagedForums(
+    @Req() req: AuthRequest,
+    @Query() query: FetchForumsQueryDto
+  ) {
+    const forums = await this.forumsService.findEngaged(req.user._id, query);
+
+    return { message: "User engaged forums fetched successfully", forums };
+  }
+
+  @Get("/users/pending")
+  @Roles(APP_ROLES.CREATOR)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async getUserPendingForums(
+    @Req() req: AuthRequest,
+    @Query() query: FetchForumsQueryDto
+  ) {
+    const forums = await this.forumsService.findPending(req.user._id, query);
+
+    return {
+      message: "User pending approval forums fetched successfully",
+      forums,
+    };
   }
 }

@@ -4,6 +4,7 @@ import { CreateForumDto } from "./dtos/create-forum.dto";
 import { FilterQuery, Types, UpdateQuery } from "mongoose";
 import { Forum } from "./schema/forum.schema";
 import { FetchForumsQueryDto } from "./dtos/query.dto";
+import { ObjectId } from "mongodb";
 
 @Injectable()
 export class ForumsService {
@@ -11,7 +12,9 @@ export class ForumsService {
 
   constructor(private readonly forumsRepository: ForumsRepository) {}
 
-  async create(payload: CreateForumDto & { creator: Types.ObjectId, image: string }) {
+  async create(
+    payload: CreateForumDto & { creator: Types.ObjectId; image: string }
+  ) {
     return this.forumsRepository.create(payload);
   }
 
@@ -40,6 +43,7 @@ export class ForumsService {
 
     return this.forumsRepository.find(
       {
+        approved: true,
         ...filter,
         ...parsedFilter,
       },
@@ -56,6 +60,40 @@ export class ForumsService {
     payload: UpdateQuery<Partial<Forum>>
   ) {
     return this.forumsRepository.findOneAndUpdate(query, payload);
+  }
+
+  async findEngaged(userId: Types.ObjectId, query: FetchForumsQueryDto) {
+    const { page, limit, ...rest } = query;
+
+    const parsedFilter = this.parseFilter(rest);
+
+    return this.forumsRepository.find(
+      {
+        approved: true,
+        "comments.user": new ObjectId(userId),
+        ...parsedFilter,
+      },
+      null,
+      {
+        page,
+        skip: (page - 1) * limit,
+      }
+    );
+  }
+
+  async findPending(userId: Types.ObjectId, query: FetchForumsQueryDto) {
+    const { page, limit, ...rest } = query;
+
+    const parsedFilter = this.parseFilter(rest);
+
+    return this.forumsRepository.find(
+      { creator: userId, approved: false, ...parsedFilter },
+      null,
+      {
+        page,
+        skip: (page - 1) * limit,
+      }
+    );
   }
 
   private parseFilter(query: Partial<FetchForumsQueryDto>) {
