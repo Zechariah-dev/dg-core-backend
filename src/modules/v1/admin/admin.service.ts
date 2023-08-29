@@ -6,6 +6,7 @@ import { FetchUsersQueryDto } from "./dtos/query.dto";
 import { User } from "../users/schemas/user.schema";
 import { BusinessRepository } from "../business/business.repository";
 import { ForumsRepository } from "../forums/forums.repository";
+import { UpdateForumDto } from "./dtos/update-forum.dto";
 
 @Injectable()
 export class AdminService {
@@ -58,16 +59,14 @@ export class AdminService {
 
     const parsedFilter = this.parseFilter(rest);
 
-    console.log(parsedFilter);
-
     return this.forumsRepository.find({ ...parsedFilter }, null, {
       page,
       skip: (page - 1) * limit,
     });
   }
 
-  async approveForum(_id: Types.ObjectId) {
-    return this.forumsRepository.findOneAndUpdate({ _id }, { approved: true });
+  async approveForum(_id: Types.ObjectId, payload: UpdateForumDto) {
+    return this.forumsRepository.findOneAndUpdate({ _id }, { ...payload });
   }
 
   private parseFilter(query: Partial<any>): object {
@@ -97,8 +96,8 @@ export class AdminService {
       Object.assign(filter, { role: query.role });
     }
 
-    if (query.approved) {
-      Object.assign(filter, { approved: query.approved });
+    if (query.approvalStatus) {
+      Object.assign(filter, { approved: query.approvalStatus });
     }
 
     if (query.date) {

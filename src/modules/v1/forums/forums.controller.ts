@@ -47,7 +47,8 @@ export class ForumsController {
   @Post()
   @UseInterceptors(FileInterceptor("file"))
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(JwtAuthGuard)
+  @Roles(APP_ROLES.CREATOR)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiCreatedResponse({ description: "201, Forum created successfully" })
   async createForum(
     @UploadedFile() file: Express.Multer.File,
@@ -84,7 +85,7 @@ export class ForumsController {
   @ApiOkResponse({ description: "200, Forums fetched successfully" })
   async fetchAll(@Query() query: FetchForumsQueryDto) {
     const forums = await this.forumsService.find(
-      { deletedAt: null },
+      { deletedAt: null, approvalStatus: "approved" },
       {},
       query
     );
@@ -180,6 +181,7 @@ export class ForumsController {
   ) {
     const forumExists = await this.forumsService.findOne({
       _id: id,
+      deletedAt: null,
     });
 
     if (!forumExists) {
@@ -206,20 +208,5 @@ export class ForumsController {
     const forums = await this.forumsService.findEngaged(req.user._id, query);
 
     return { message: "User engaged forums fetched successfully", forums };
-  }
-
-  @Get("/users/pending")
-  @Roles(APP_ROLES.CREATOR)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  async getUserPendingForums(
-    @Req() req: AuthRequest,
-    @Query() query: FetchForumsQueryDto
-  ) {
-    const forums = await this.forumsService.findPending(req.user._id, query);
-
-    return {
-      message: "User pending approval forums fetched successfully",
-      forums,
-    };
   }
 }

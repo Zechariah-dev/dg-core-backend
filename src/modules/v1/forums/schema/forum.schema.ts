@@ -1,5 +1,6 @@
 import { Types, Document, HydratedDocument } from "mongoose";
 import { Prop, SchemaFactory, Schema } from "@nestjs/mongoose";
+import { APPROVAL_STATUS } from "../../../../constants";
 
 @Schema({ timestamps: true })
 export class Forum extends Document {
@@ -21,8 +22,18 @@ export class Forum extends Document {
   @Prop({ type: String, required: true })
   content: string;
 
-  @Prop({ type: Boolean, default: false })
-  approved: boolean;
+  @Prop({
+    type: String,
+    enum: APPROVAL_STATUS,
+    default: APPROVAL_STATUS.PENDING,
+  })
+  approvalStatus: string;
+
+  @Prop({
+    type: String,
+    required: false,
+  })
+  approvalMessage: string;
 
   @Prop({
     type: Types.ObjectId,

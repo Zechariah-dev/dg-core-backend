@@ -1,4 +1,6 @@
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -23,13 +25,17 @@ import {
 } from "@nestjs/swagger";
 import { FetchUsersQueryDto } from "./dtos/query.dto";
 import { RolesGuard } from "../../../guards/role.guard";
+import { UpdateForumDto } from "./dtos/update-forum.dto";
 
 @Controller("admin")
 @ApiTags("Admin")
 @Roles(APP_ROLES.ADMIN)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly events: EventEmitter2
+  ) {}
 
   @Patch("/users/:id/approval")
   @HttpCode(HttpStatus.OK)
@@ -109,15 +115,24 @@ export class AdminController {
 
   @Patch("/forums/:id")
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: "200, User forum approved successfully" })
-  @ApiNotFoundResponse({ description: "400, Forum does not exist"})
-  async approveForum(@Param("id") id: Types.ObjectId) {
-    const forum = await this.adminService.approveForum(id);
+  @ApiOkResponse({ description: "200, User forum status updated successfully" })
+  @ApiNotFoundResponse({ description: "400, Forum does not exist" })
+  async approveForum(
+    @Param("id") id: Types.ObjectId,
+    @Body() body: UpdateForumDto
+  ) {
+    const forum = await this.adminService.approveForum(id, body);
 
     if (!forum) {
       throw new NotFoundException("Forum does not exist");
     }
 
-    return { forum, message: "User forum approved successfully" };
+    this.events.emit("notification.create", {
+      user: forum.creator,
+      title: `Forum has been ${body.approvalStatus}`,
+      body: "",
+    });
+
+    return { forum, message: "User forum status updated successfully" };
   }
 }

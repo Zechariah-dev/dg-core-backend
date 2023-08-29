@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsNumber, IsOptional } from "class-validator";
+import { IsNumber, IsOptional, IsString } from "class-validator";
 
 export class FetchForumsQueryDto {
   @IsNumber()
@@ -11,4 +11,8 @@ export class FetchForumsQueryDto {
   @IsOptional()
   @Transform((prop) => Number(prop.value))
   limit?: number = 1;
+
+  @IsString()
+  @IsOptional()
+  approvalStatus: string
 }
