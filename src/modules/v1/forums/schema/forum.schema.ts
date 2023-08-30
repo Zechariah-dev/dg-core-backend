@@ -16,8 +16,8 @@ export class Forum extends Document {
   @Prop({ type: String, required: true })
   category: string;
 
-  @Prop({ type: String, required: true })
-  readTime: string;
+  @Prop({ type: Number, required: true })
+  readTime: number;
 
   @Prop({ type: String, required: true })
   content: string;
