@@ -15,7 +15,8 @@ export class ForumsService {
   async create(
     payload: CreateForumDto & { creator: Types.ObjectId; image: string }
   ) {
-    return this.forumsRepository.create(payload);
+    const readTime = this.calculateReadingTime(payload.content);
+    return this.forumsRepository.create({ ...payload, readTime });
   }
 
   async findById(_id: Types.ObjectId) {
@@ -94,6 +95,14 @@ export class ForumsService {
         skip: (page - 1) * limit,
       }
     );
+  }
+
+  calculateReadingTime(content: string) {
+    const wpm = 225;
+    const words = content.trim().split(/\s+/).length;
+    const time = Math.ceil(words / wpm);
+
+    return time;
   }
 
   private parseFilter(query: Partial<FetchForumsQueryDto>) {

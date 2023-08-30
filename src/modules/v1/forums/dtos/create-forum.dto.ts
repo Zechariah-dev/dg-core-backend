@@ -15,10 +15,5 @@ export class CreateForumDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  readTime: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
   category: string;
 }
