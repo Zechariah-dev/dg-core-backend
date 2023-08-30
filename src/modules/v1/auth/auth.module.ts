@@ -13,6 +13,13 @@ import { Business, BusinessSchema } from "../business/schemas/business.schema";
 import { AwsS3Service } from "src/common/services/aws-s3.service";
 import { BusinessService } from "../business/business.service";
 import { GoogleStrategy } from "./google.strategy";
+import { ConversationRepository } from "../conversations/conversation.repository";
+import {
+  Conversation,
+  ConversationSchema,
+} from "../conversations/schemas/conversation.schema";
+import { ProductsRepository } from "../products/products.repository";
+import { Product, ProductSchema } from "../products/schemas/product.schema";
 
 @Module({
   imports: [
@@ -24,6 +31,14 @@ import { GoogleStrategy } from "./google.strategy";
       {
         name: Business.name,
         schema: BusinessSchema,
+      },
+      {
+        name: Conversation.name,
+        schema: ConversationSchema,
+      },
+      {
+        name: Product.name,
+        schema: ProductSchema,
       },
     ]),
     JwtModule.registerAsync({
@@ -44,6 +59,8 @@ import { GoogleStrategy } from "./google.strategy";
     GoogleStrategy,
     AwsS3Service,
     BusinessService,
+    ConversationRepository,
+    ProductsRepository,
   ],
 })
 export class AuthModule {}

@@ -26,6 +26,7 @@ import { ChangePasswordDto } from "./dtos/change-password.dto";
 import * as bcrypt from "bcrypt";
 import { Roles } from "src/decorators/roles..decorator";
 import { APP_ROLES } from "src/common/interfaces/auth.interface";
+import { RolesGuard } from "../../../guards/role.guard";
 
 @Controller("users")
 @ApiTags("User")
@@ -140,6 +141,7 @@ export class UsersController {
   @UseInterceptors(FileInterceptor("file"))
   @HttpCode(HttpStatus.OK)
   @Roles(APP_ROLES.CREATOR)
+  @UseGuards(RolesGuard)
   @ApiOkResponse({
     description: "200, Creator identification document uploaded successfully",
   })
@@ -159,5 +161,18 @@ export class UsersController {
       user,
       message: "Creator Identification document uploaded successfully",
     };
+  }
+
+  @Get("/insights")
+  @HttpCode(HttpStatus.OK)
+  @Roles(APP_ROLES.CREATOR)
+  @UseGuards(RolesGuard)
+  @ApiOkResponse({
+    description: "200, User insights data fetched successfully",
+  })
+  async getUserInsights(@Req() req: AuthRequest) {
+    const insights = await this.usersService.getInsights(req.user._id);
+
+    return { message: "User insights data fetched successfully", insights };
   }
 }

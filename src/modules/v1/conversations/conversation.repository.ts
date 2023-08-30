@@ -4,7 +4,7 @@ import {
   ConversationDocument,
 } from "./schemas/conversation.schema";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, QueryOptions } from "mongoose";
+import { FilterQuery, Model, QueryOptions, Types } from "mongoose";
 
 export class ConversationRepository extends BaseRepository<ConversationDocument> {
   constructor(
@@ -52,5 +52,94 @@ export class ConversationRepository extends BaseRepository<ConversationDocument>
         },
       ])
       .lean();
+  }
+
+  async getInsight(userId: Types.ObjectId) {
+    return this.conversationModel.aggregate([
+      {
+        $match: {
+          $or: [
+            {
+              creator: userId,
+            },
+            {
+              recipient: userId,
+            },
+          ],
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalCount: {
+            $sum: 1,
+          },
+          latestDate: {
+            $first: "$createdAt",
+          },
+          sevenDaysAgoDate: {
+            $first: {
+              $dateFromParts: {
+                year: {
+                  $year: "$createdAt",
+                },
+                month: {
+                  $month: "$createdAt",
+                },
+                day: {
+                  $dayOfMonth: {
+                    $subtract: ["$createdAt", 7 * 24 * 60 * 60 * 1000],
+                  },
+                },
+                hour: 0,
+                minute: 0,
+                second: 0,
+                millisecond: 0,
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          totalCount: 1,
+          percentageChange: {
+            $cond: {
+              if: {
+                $eq: ["$sevenDaysAgoDate", null],
+              },
+              then: null,
+              else: {
+                $divide: [
+                  {
+                    $subtract: [
+                      "$totalCount",
+                      {
+                        $arrayElemAt: ["$previousTotalCount", 0],
+                      },
+                    ],
+                  },
+                  {
+                    $arrayElemAt: ["$previousTotalCount", 0],
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalCount: 1,
+          percentageChange: 1,
+        },
+      },
+    ]);
   }
 }

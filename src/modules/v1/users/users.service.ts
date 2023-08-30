@@ -6,13 +6,17 @@ import { User } from "./schemas/user.schema";
 import { FilterQuery, Types } from "mongoose";
 import { UserRegisterDto } from "../auth/dtos/user-register.dto";
 import { BusinessRepository } from "../business/business.repository";
+import { ConversationRepository } from "../conversations/conversation.repository";
+import { ProductsRepository } from "../products/products.repository";
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly businessRepository: BusinessRepository,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly conversationRepository: ConversationRepository,
+    private readonly productRepository: ProductsRepository
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -95,5 +99,20 @@ export class UsersService {
         refreshToken: payload.refreshToken,
       },
     });
+  }
+
+  async getInsights(userId: Types.ObjectId) {
+    const conversationInsight = await this.conversationRepository.getInsight(
+      userId
+    );
+
+    const products = await this.productRepository.find({ seller: userId });
+
+    const viewsCount = products.reduce(
+      (accumulator, product) => accumulator + product.views,
+      0
+    );
+
+    return { conversationInsight: conversationInsight[0], viewsCount };
   }
 }
