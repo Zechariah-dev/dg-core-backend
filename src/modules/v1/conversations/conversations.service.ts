@@ -76,4 +76,11 @@ export class ConversationsService {
   ) {
     return this.conversationRepository.findOneAndUpdate({ _id }, payload);
   }
+
+  async readMessages(id: Types.ObjectId, recipient: Types.ObjectId) {
+    return this.messagesRepository.findOneAndUpdate(
+      { conversation: id, author: { $ne: recipient } },
+      { unread: false }
+    );
+  }
 }

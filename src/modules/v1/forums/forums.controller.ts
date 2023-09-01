@@ -107,7 +107,7 @@ export class ForumsController {
       query
     );
 
-    return { forums, message: "Use forums fetched successfully" };
+    return { forums, message: "User forums fetched successfully" };
   }
 
   @Delete("/:id")

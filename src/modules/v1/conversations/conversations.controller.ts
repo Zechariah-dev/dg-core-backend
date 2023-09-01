@@ -7,6 +7,7 @@ import {
   Logger,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -99,6 +100,29 @@ export class ConversationsController {
 
     return {
       message: "Check conversation existence successfully",
+      conversation,
+    };
+  }
+
+  @Patch("/read/:id")
+  @ApiOkResponse({
+    description: "200, Conversation received messages read successfully",
+  })
+  @ApiNotFoundResponse({ description: "404, Conversation does not exist" })
+  async readConversationMessages(
+    @Param("id", ParseObjectIdPipe) id: Types.ObjectId,
+    @Req() req: AuthRequest
+  ) {
+    const conversation = await this.conversationsService.findById(id);
+
+    if (!conversation) {
+      throw new NotFoundException("Conversation does not exist");
+    }
+
+    await this.conversationsService.readMessages(id, req.user._id);
+
+    return {
+      message: "Conversation received messages read successfully",
       conversation,
     };
   }

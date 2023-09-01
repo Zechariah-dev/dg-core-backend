@@ -11,6 +11,9 @@ export class Message extends Document {
 
   @Prop({ type: Types.ObjectId, ref: "Conversation" })
   conversation: Types.ObjectId;
+
+  @Prop({ type: Boolean, default: true })
+  unread: boolean;
 }
 
 export type MessageDocument = HydratedDocument<Message>;
