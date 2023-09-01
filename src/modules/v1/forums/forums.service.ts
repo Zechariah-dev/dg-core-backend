@@ -44,7 +44,6 @@ export class ForumsService {
 
     return this.forumsRepository.find(
       {
-        approved: true,
         ...filter,
         ...parsedFilter,
       },
