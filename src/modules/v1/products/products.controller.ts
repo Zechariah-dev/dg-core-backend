@@ -213,4 +213,7 @@ export class ProductsController {
 
     return { message: "Product view count increased", product };
   }
+
+  // @Get("/recommended")
+  // async getRecommendProduct(@Query() query: FetchProductQueryDto) {}
 }

@@ -29,6 +29,9 @@ export class ConversationRepository extends BaseRepository<ConversationDocument>
           path: "recipient",
           select: "image fullname phone _id email",
         },
+        {
+          path: "lastMessageSent",
+        },
       ])
       .lean();
   }
@@ -40,7 +43,7 @@ export class ConversationRepository extends BaseRepository<ConversationDocument>
   ): Promise<ConversationDocument[]> {
     return this.conversationModel
       .find(query, projections, options)
-      .sort("-lastMessageSentAt")
+      .sort("lastMessageSentAt")
       .populate([
         {
           path: "creator",
@@ -49,6 +52,9 @@ export class ConversationRepository extends BaseRepository<ConversationDocument>
         {
           path: "recipient",
           select: "image fullname phone _id email",
+        },
+        {
+          path: "lastMessageSent",
         },
       ])
       .lean();
