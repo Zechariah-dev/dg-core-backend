@@ -22,6 +22,7 @@ export class MessagesService {
     const message = await this.messagesRepository.create(params);
     conversation = await this.conversationsService.updateOne(conversation._id, {
       lastMessageSent: message._id,
+      lastMessageSentAt: new Date()
     });
 
     return { message, conversation };
@@ -29,7 +30,7 @@ export class MessagesService {
 
   getMessages(conversation: Types.ObjectId) {
     return this.messagesRepository.find({ conversation }, null, {
-      sort: "-createdAt",
+      sort: "createdAt",
       populate: [
         {
           path: "author",

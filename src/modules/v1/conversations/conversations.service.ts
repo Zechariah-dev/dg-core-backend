@@ -25,7 +25,7 @@ export class ConversationsService {
         $or: [{ recipient: id }, { creator: id }],
       },
       null,
-      { sort: "-lastMessageSent" }
+      { sort: "lastMessageSentAt" }
     );
   }
 
