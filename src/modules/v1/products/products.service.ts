@@ -10,7 +10,8 @@ export class ProductsService {
   constructor(private readonly productsRepository: ProductsRepository) {}
 
   async createProduct(payload: CreateProductPayload) {
-    const product = await this.productsRepository.create(payload);
+    const sku = this.generateSku(payload.title);
+    const product = await this.productsRepository.create({ ...payload, sku });
 
     return product;
   }
@@ -76,6 +77,10 @@ export class ProductsService {
       { _id },
       { $inc: { views: 1 } }
     );
+  }
+
+  private generateSku(name: string) {
+    return name.replace(" ", "-") + Math.floor(Math.random() + 1000);
   }
 
   private parseFilter(query: Partial<FetchProductQueryDto>): object {

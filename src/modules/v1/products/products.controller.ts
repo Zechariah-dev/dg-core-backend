@@ -152,6 +152,20 @@ export class ProductsController {
     return { product, message: "Product was fetched successfully" };
   }
 
+  @Get("/filter/:sku")
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: "200, product was fetched successfully" })
+  @ApiNotFoundResponse({ description: "400, product does not exist" })
+  async getProductBySku(@Param("sku") sku: string) {
+    const product = await this.productsService.findOne({ sku });
+
+    if (!product) {
+      throw new NotFoundException("Product does not exist");
+    }
+
+    return { product, message: "Product was fetched successfully" };
+  }
+
   @Delete("/user/:id")
   @HttpCode(HttpStatus.OK)
   @Roles(APP_ROLES.CREATOR)

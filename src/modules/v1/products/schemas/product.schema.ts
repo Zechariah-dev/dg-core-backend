@@ -13,6 +13,11 @@ export class Product extends Document {
 
   @Prop({
     type: String,
+  })
+  sku: string;
+
+  @Prop({
+    type: String,
     required: true,
   })
   description: string;
