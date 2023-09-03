@@ -5,8 +5,10 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  MaxFileSizeValidator,
   NotFoundException,
   Param,
+  ParseFilePipe,
   Patch,
   Post,
   Query,
@@ -35,13 +37,15 @@ import { AwsS3Service } from "../../../common/services/aws-s3.service";
 import { Roles } from "../../../decorators/roles..decorator";
 import { APP_ROLES } from "../../../common/interfaces/auth.interface";
 import { RolesGuard } from "../../../guards/role.guard";
+import { ConfigService } from "@nestjs/config";
 
 @Controller("forums")
 @ApiTags("Forum")
 export class ForumsController {
   constructor(
     private readonly forumsService: ForumsService,
-    private readonly awsService: AwsS3Service
+    private readonly awsService: AwsS3Service,
+    private readonly configService: ConfigService
   ) {}
 
   @Post()
@@ -51,7 +55,17 @@ export class ForumsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiCreatedResponse({ description: "201, Forum created successfully" })
   async createForum(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({
+            maxSize: 2000 * 1000,
+          }),
+        ],
+        fileIsRequired: true,
+      })
+    )
+    file: Express.Multer.File,
     @Body() body: CreateForumDto,
     @Req() req: AuthRequest
   ) {
@@ -137,16 +151,36 @@ export class ForumsController {
   }
 
   @Patch("/user/:id")
+  @UseInterceptors(FileInterceptor("file"))
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
+  @Roles(APP_ROLES.CREATOR)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiParam({ name: "id", type: "string" })
   @ApiOkResponse({ description: "200, Forum has been updated successfully" })
   @ApiNotFoundResponse({ description: "400, Forum does not exist" })
   async updateForum(
     @Param("id", ParseObjectIdPipe) id: Types.ObjectId,
     @Body() body: UpdateForumDto,
-    @Req() req: AuthRequest
+    @Req() req: AuthRequest,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({
+            maxSize: 2000 * 1000,
+          }),
+        ],
+        fileIsRequired: false,
+      })
+    )
+    file?: Express.Multer.File
   ) {
+    let payload = { ...body };
+
+    if (file) {
+      const image = await this.awsService.uploadImage(file);
+      Object.assign(payload, { image });
+    }
+
     const forumExists = await this.forumsService.findOne({
       creator: req.user._id,
       _id: id,
@@ -161,7 +195,7 @@ export class ForumsController {
         creator: req.user._id,
         _id: id,
       },
-      body
+      payload
     );
 
     return { forum, message: "Forum has been updated successfully" };
