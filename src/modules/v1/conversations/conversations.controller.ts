@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from "@nestjs/common";
@@ -60,9 +61,14 @@ export class ConversationsController {
   @ApiOkResponse({
     description: "200, User conversations retrieved successfully",
   })
-  async getUserConversations(@Req() req: AuthRequest) {
+  async getUserConversations(
+    @Query("search") search: string,
+    @Req() req: AuthRequest
+  ) {
     const conversations = await this.conversationsService.getConversations(
-      req.user._id
+      req.user._id,
+      req.user.role,
+      search
     );
 
     return {

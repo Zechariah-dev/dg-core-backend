@@ -72,4 +72,7 @@ export abstract class BaseRepository<T extends Document> {
       { deletedAt: new Date() }
     );
   }
+  public async aggregate(aggregation: Array<any>) {
+    return this.model.aggregate(aggregation);
+  }
 }

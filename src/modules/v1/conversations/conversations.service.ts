@@ -10,6 +10,7 @@ import { UsersRepository } from "../users/users.repository";
 import { User } from "../users/schemas/user.schema";
 import { MessagesRepository } from "../messages/messages.repository";
 import { Conversation } from "./schemas/conversation.schema";
+import { ObjectId } from "mongodb";
 
 @Injectable()
 export class ConversationsService {
@@ -19,14 +20,92 @@ export class ConversationsService {
     private readonly messagesRepository: MessagesRepository
   ) {}
 
-  async getConversations(id: Types.ObjectId) {
-    return this.conversationRepository.find(
+  async getConversations(id: Types.ObjectId, role: string, search?: string) {
+    const aggregation: Array<any> = [
       {
-        $or: [{ recipient: id }, { creator: id }],
+        $match: {
+          $or: [
+            {
+              creator: new ObjectId(id),
+            },
+            {
+              recipient: new ObjectId(id),
+            },
+          ],
+        },
       },
-      null,
-      { sort: "lastMessageSentAt" }
-    );
+      {
+        $lookup: {
+          from: "users",
+          localField: "recipient",
+          foreignField: "_id",
+          as: "recipient",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "creator",
+          foreignField: "_id",
+          as: "creator",
+        },
+      },
+      {
+        $unwind: {
+          path: "$recipient",
+        },
+      },
+      {
+        $unwind: {
+          path: "$creator",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "recipient.fullname": 1,
+          "recipient.image": 1,
+          "recipient._id": 1,
+          "recipient.email": 1,
+          "recipient.phone": 1,
+          "creator.fullname": 1,
+          "creator.image": 1,
+          "creator._id": 1,
+          "creator.email": 1,
+          "creator.phone": 1,
+        },
+      },
+    ];
+
+    if (search && role === "creator") {
+      const searchRegex = new RegExp(search, "i");
+
+      const matchQuery = {
+        $or: [
+          { "recipient.fullname": { $regex: searchRegex } },
+          { "recipient.email": { $regex: searchRegex } },
+        ],
+      };
+
+      aggregation.push({ $match: matchQuery });
+    }
+
+    if (search && role === "consumer") {
+      const searchRegex = new RegExp(search, "i");
+
+      const matchQuery = {
+        $or: [
+          { "creator.fullname": { $regex: searchRegex } },
+          { "creator.email": { $regex: searchRegex } },
+        ],
+      };
+
+      aggregation.push({ $match: matchQuery });
+    }
+
+    return this.conversationRepository.aggregate(aggregation);
   }
 
   async findById(_id: Types.ObjectId) {
