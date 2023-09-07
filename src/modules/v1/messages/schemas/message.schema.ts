@@ -12,7 +12,7 @@ export class Message extends Document {
   @Prop({ type: Types.ObjectId, ref: "Conversation" })
   conversation: Types.ObjectId;
 
-  @Prop({ type: Boolean, default: true })
+  @Prop({ type: Boolean, default: false })
   unread: boolean;
 }
 

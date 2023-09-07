@@ -17,6 +17,7 @@ import { Types } from "mongoose";
 import { SkipThrottle, Throttle } from "@nestjs/throttler";
 import { ApiCreatedResponse, ApiOkResponse } from "@nestjs/swagger";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { Cron } from "@nestjs/schedule";
 
 @Controller("messages")
 @UseGuards(JwtAuthGuard)
@@ -25,6 +26,11 @@ export class MessagesController {
     private readonly messagesService: MessagesService,
     private eventEmitter: EventEmitter2
   ) {}
+
+  @Cron("45 * * * * ")
+  async forwardUnreadMessageNotification() {
+    await this.messagesService.cronHandler();
+  }
 
   @Throttle(5, 10)
   @Post("/:id")

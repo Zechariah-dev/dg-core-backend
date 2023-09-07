@@ -12,6 +12,7 @@ import { HttpCacheInterceptor } from "../../interceptors/http-cache.interceptor"
 import { join } from "path";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
     }),
     EventEmitterModule.forRoot(),
     V1Module,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [
