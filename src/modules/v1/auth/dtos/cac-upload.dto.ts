@@ -5,12 +5,4 @@ export class CacUploadDto {
   @IsString()
   @ApiProperty()
   cacNumber: string;
-
-  @IsString()
-  @ApiProperty()
-  address: string;
-
-  @IsString()
-  @ApiProperty()
-  name: string;
 }

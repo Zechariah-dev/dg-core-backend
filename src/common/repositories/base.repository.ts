@@ -75,4 +75,8 @@ export abstract class BaseRepository<T extends Document> {
   public async aggregate(aggregation: Array<any>) {
     return this.model.aggregate(aggregation);
   }
+
+  public async count(query: FilterQuery<T>) {
+    return this.model.count(query)
+  }
 }

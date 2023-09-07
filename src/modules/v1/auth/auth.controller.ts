@@ -42,6 +42,7 @@ import { AwsS3Service } from "../../../common/services/aws-s3.service";
 import { BusinessService } from "../business/business.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { APP_ROLES } from "../../../common/interfaces/auth.interface";
 
 @Controller("auth")
 @ApiTags("Auth")
@@ -92,7 +93,21 @@ export class AuthController {
       throw new NotFoundException("User does not exist");
     }
 
-    const user = await this.usersService.updateProfile({ _id: id }, body);
+    const { businessName, businessAddress, ...rest } = body;
+
+    if (userExists.role === APP_ROLES.CREATOR) {
+      const businessExist = await this.businessService.findOne({ creator: id });
+      if (!businessExist) {
+        throw new NotFoundException("Business does not exist");
+      }
+
+      await this.businessService.update(
+        { creator: id },
+        { name: businessName, address: businessAddress }
+      );
+    }
+
+    const user = await this.usersService.updateProfile({ _id: id }, rest);
 
     await this.authService.forwardEmailVerificationMail(
       user.email,
@@ -123,7 +138,9 @@ export class AuthController {
   @Post("/register/cac/:id")
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor("file"))
-  @ApiOkResponse({ description: "200, " })
+  @ApiOkResponse({
+    description: "200, Business credentials has been uploaded sucessfully",
+  })
   @ApiNotFoundResponse({ description: "400, User does not exist" })
   async registerCacProfile(
     @UploadedFile() file: Express.Multer.File,
@@ -146,7 +163,7 @@ export class AuthController {
 
     return {
       user,
-      message: "Business Credentials has been uploaded successfully",
+      message: "Business credentials has been uploaded successfully",
     };
   }
 

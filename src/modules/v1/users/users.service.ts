@@ -8,6 +8,7 @@ import { UserRegisterDto } from "../auth/dtos/user-register.dto";
 import { BusinessRepository } from "../business/business.repository";
 import { ConversationRepository } from "../conversations/conversation.repository";
 import { ProductsRepository } from "../products/products.repository";
+import { APP_ROLES } from "../../../common/interfaces/auth.interface";
 
 @Injectable()
 export class UsersService {
@@ -36,16 +37,20 @@ export class UsersService {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedPassword = await bcrypt.hash(payload.password, salt);
 
-    const business = await this.businessRepository.create({});
-
-    const user = await this.usersRepository.create({
+    let user = await this.usersRepository.create({
       ...payload,
-      business: business._id,
       password: hashedPassword,
     });
 
-    business.creator = user._id;
-    await business.save();
+    if (payload.role === APP_ROLES.CREATOR) {
+      const business = await this.businessRepository.create({});
+
+      business.creator = user._id;
+      await business.save();
+
+      user.business = business._id;
+      user = await user.save();
+    }
 
     return user;
   }
