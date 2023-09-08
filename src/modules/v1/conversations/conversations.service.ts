@@ -79,6 +79,7 @@ export class ConversationsService {
       },
     ];
 
+    // search conversation based on the user role and search query
     if (search && role === "creator") {
       const searchRegex = new RegExp(search, "i");
 
@@ -92,6 +93,7 @@ export class ConversationsService {
       aggregation.push({ $match: matchQuery });
     }
 
+    // search conversation based on the user role and search query
     if (search && role === "consumer") {
       const searchRegex = new RegExp(search, "i");
 
@@ -105,7 +107,24 @@ export class ConversationsService {
       aggregation.push({ $match: matchQuery });
     }
 
-    return this.conversationRepository.aggregate(aggregation);
+    const conversations = await this.conversationRepository.aggregate(
+      aggregation
+    );
+
+    const refinedData = Promise.all(
+      conversations.map(async (conversation) => {
+        // count the number of the unread messages by conversation
+        const unreadMessages = await this.messagesRepository.count({
+          conversation: conversation._id,
+          author: { $ne: id },
+          unread: true,
+        });
+
+        return { ...conversation, unreadMessages };
+      })
+    );
+
+    return refinedData;
   }
 
   async findById(_id: Types.ObjectId) {

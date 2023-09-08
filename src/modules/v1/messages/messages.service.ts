@@ -43,7 +43,7 @@ export class MessagesService {
         this.emitter.emit("notification", {
           user: user._id,
           title: "You have unread messages",
-          body: `You have ${unreadMessages} messages waiting your reply`,
+          body: `You have ${unreadMessages} messages awaiting your reply`,
         });
       }
     } catch (error) {
