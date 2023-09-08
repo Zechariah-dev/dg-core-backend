@@ -19,7 +19,7 @@ export class MessagesService {
   async cronHandler() {
     try {
       const users = await this.usersRepository.find({
-        role: { $not: "admin" },
+        role: { $ne: "admin" },
       });
 
       for (const user of users) {
@@ -33,7 +33,7 @@ export class MessagesService {
         for (const conversation of conversations) {
           const messages = await this.messagesRepository.count({
             conversation: conversation._id,
-            author: { $not: user._id },
+            author: { $ne: user._id },
             unread: false,
           });
 
