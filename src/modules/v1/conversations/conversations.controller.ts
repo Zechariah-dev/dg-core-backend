@@ -132,4 +132,20 @@ export class ConversationsController {
       conversation,
     };
   }
+
+  @Get("/unread/count")
+  @ApiOkResponse({
+    description: "200, Number of user unread messages fetcheds successfully",
+  })
+  async getUnreadConversation(@Req() req: AuthRequest) {
+    const unreadMessages = await this.conversationsService.unreadMessages(
+      req.user._id,
+      req.user.role
+    );
+
+    return {
+      unreadMessages,
+      message: "Number of user unread messages fetched successfully",
+    };
+  }
 }

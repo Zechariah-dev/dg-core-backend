@@ -181,4 +181,22 @@ export class ConversationsService {
       { unread: false }
     );
   }
+
+  async unreadMessages(id: Types.ObjectId, role: string) {
+    const conversations = await this.getConversations(id, role);
+
+    let count = 0;
+
+    conversations.map(async (conversation) => {
+      const messages = await this.messagesRepository.count({
+        conversation: conversation._id,
+        author: { $ne: id },
+        unread: false,
+      });
+
+      count += messages;
+    });
+
+    return count;
+  }
 }
