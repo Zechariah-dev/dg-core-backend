@@ -75,7 +75,7 @@ export class Product extends Document {
     ],
   })
   variation: {
-    size: string;
+    size: string;create
     color: string;
     price: number;
     quantity: number;

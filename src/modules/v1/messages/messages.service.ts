@@ -77,6 +77,10 @@ export class MessagesService {
           path: "author",
           select: "fullname _id  email phone image",
         },
+        {
+          path: "product",
+          select: "title sku images price type _id"
+        }
       ],
     });
   }
