@@ -62,6 +62,7 @@ export class AdminService {
     return this.forumsRepository.find({ ...parsedFilter }, null, {
       page,
       skip: (page - 1) * limit,
+      sort: "-createdAt -updatedAt",
     });
   }
 
