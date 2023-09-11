@@ -17,7 +17,7 @@ export class UsersRepository extends BaseRepository<UserDocument> {
   public findOne(
     query: FilterQuery<UserDocument>,
     projections?: unknown
-  ): Promise<User> {
+  ): Promise<UserDocument | null> {
     return this.usersModel
       .findOne(query, projections)
       .populate([
@@ -26,7 +26,8 @@ export class UsersRepository extends BaseRepository<UserDocument> {
           select: "-__v -createdAt -updatedAt",
         },
       ])
-      .lean();
+      .lean()
+      .exec();
   }
 
   public find(
@@ -41,7 +42,8 @@ export class UsersRepository extends BaseRepository<UserDocument> {
           path: "business",
         },
       ])
-      .lean();
+      .lean()
+      .exec();
   }
 
   public findOneAndUpdate(
@@ -57,6 +59,7 @@ export class UsersRepository extends BaseRepository<UserDocument> {
       .populate([
         {
           path: "business",
+          select: "-__v -createdAt -updatedAt",
         },
       ])
       .lean();

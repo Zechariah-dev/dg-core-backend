@@ -51,6 +51,7 @@ export class ForumsService {
       {
         page,
         skip: (page - 1) * limit,
+        sort: "-createdAt -updatedAt",
       }
     );
   }
