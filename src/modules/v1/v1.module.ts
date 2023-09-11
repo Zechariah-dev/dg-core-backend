@@ -12,6 +12,7 @@ import { ConversationsModule } from "./conversations/conversations.module";
 import { MessagesModule } from "./messages/messages.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { StoresModule } from "./stores/stores.module";
+import { SearchModule } from "./search/search.module";
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { StoresModule } from "./stores/stores.module";
     ConversationsModule,
     MessagesModule,
     NotificationsModule,
-    StoresModule
+    StoresModule,
+    SearchModule,
   ],
 })
 export class V1Module {}
