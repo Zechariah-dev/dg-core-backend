@@ -155,12 +155,6 @@ export class ConversationsService {
       recipient: recipient._id,
     });
 
-    await this.messagesRepository.create({
-      content: params.content,
-      author: creator._id,
-      conversation: conversation._id,
-    });
-
     return conversation;
   }
 
