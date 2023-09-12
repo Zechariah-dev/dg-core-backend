@@ -54,6 +54,7 @@ export class CategoriesService {
       {
         page,
         skip: (page - 1) * limit,
+        sort: "-createdAt",
       }
     );
   }
