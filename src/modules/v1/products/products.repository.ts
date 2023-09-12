@@ -15,39 +15,45 @@ export class ProductsRepository extends BaseRepository<ProductDocument> {
     projections?: unknown | null,
     options?: QueryOptions<unknown>
   ): Promise<ProductDocument[]> {
-    return this.productsModel.find(query, projections, options).populate([
-      {
-        path: "seller",
-        select: "image fullname email phone _id",
-      },
-      {
-        path: "categories",
-        select: "name description image",
-      },
-      {
-        path: "store",
-        select: "name _id",
-      },
-    ]);
+    return this.productsModel
+      .find(query, projections, options)
+      .populate([
+        {
+          path: "seller",
+          select: "image fullname email phone _id",
+        },
+        {
+          path: "categories",
+          select: "name description image",
+        },
+        {
+          path: "store",
+          select: "name _id",
+        },
+      ])
+      .sort("-createdAt");
   }
 
   public findOne(
     query: FilterQuery<ProductDocument>,
     projections?: unknown
   ): Promise<ProductDocument> {
-    return this.productsModel.findOne(query, projections).populate([
-      {
-        path: "seller",
-        select: "image fullname email phone _id",
-      },
-      {
-        path: "categories",
-        select: "name description image",
-      },
-      {
-        path: "store",
-        select: "name _id",
-      },
-    ]);
+    return this.productsModel
+      .findOne(query, projections)
+      .populate([
+        {
+          path: "seller",
+          select: "image fullname email phone _id",
+        },
+        {
+          path: "categories",
+          select: "name description image",
+        },
+        {
+          path: "store",
+          select: "name _id",
+        },
+      ])
+      .sort("-createdAt");
   }
 }
