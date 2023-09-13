@@ -12,9 +12,8 @@ export class createMessageDto {
 
   @IsString()
   @IsOptional()
-  @Transform((val) => new ObjectId(val.value))
   @ApiProperty({
     required: false,
   })
-  product: Types.ObjectId;
+  product: string;
 }
