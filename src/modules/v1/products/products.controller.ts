@@ -23,6 +23,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
@@ -238,6 +239,35 @@ export class ProductsController {
     return { message: "Product view count increased", product };
   }
 
-  // @Get("/recommended")
-  // async getRecommendProduct(@Query() query: FetchProductQueryDto) {}
+  @Get("/home/top-deals")
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOkResponse({ description: "200, Top product deals fetched successfully" })
+  async getTopDeals(
+    @Query() query: FetchProductQueryDto,
+    @Req() req: AuthRequest
+  ) {
+    const products = await this.productsService.fetchTopDeals(
+      query,
+      req?.user?._id
+    );
+
+    return { message: "Top product deals fetched successfully", products };
+  }
+
+  @Get("/home/recommend")
+  @UseGuards(OptionalJwtAuthGuard)
+  async getRecommendProduct(
+    @Query() query: FetchProductQueryDto,
+    @Req() req: AuthRequest
+  ) {
+    const products = await this.productsService.getProductRecommendations(
+      query,
+      req?.user?._id
+    );
+
+    return {
+      message: "Product recommendations fetched successfully",
+      products,
+    };
+  }
 }

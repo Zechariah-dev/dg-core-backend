@@ -1,10 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ProductsRepository } from "./products.repository";
 import { CreateProductPayload } from "./dtos/create-product.dto";
 import { FilterQuery, Types, UpdateQuery } from "mongoose";
 import { Product } from "./schemas/product.schema";
 import { FetchProductQueryDto } from "./dtos/query.dto";
 import { FavoritesRepository } from "../favorites/favorites.repository";
+import { ObjectId } from "mongodb";
 
 @Injectable()
 export class ProductsService {
@@ -41,48 +42,43 @@ export class ProductsService {
     query: FetchProductQueryDto,
     userId?: string
   ) {
-    try {
-      const { page, limit, sort, ...rest } = query;
+    const { page, limit, sort, ...rest } = query;
 
-      const parsedFilter = this.parseFilter(rest);
+    const parsedFilter = this.parseFilter(rest);
 
-      const data = await this.productsRepository.find(
-        {
-          ...filter,
-          ...parsedFilter,
-          deletedAt: null,
-        },
-        projection,
-        {
-          page,
-          skip: (page - 1) * limit,
-          sort: sort ?? "-createdAt",
-        }
-      );
+    const data = await this.productsRepository.find(
+      {
+        ...filter,
+        ...parsedFilter,
+        deletedAt: null,
+      },
+      projection,
+      {
+        page,
+        skip: (page - 1) * limit,
+        sort: sort ?? "-createdAt",
+      }
+    );
 
-      const productIds = data.map((product) => product._id);
+    const productIds = data.map((product) => product._id);
 
-      const favorites = await this.favoritesRepository.find({
-        product: { $in: productIds },
-        user: userId,
-      });
+    const favorites = await this.favoritesRepository.find({
+      product: { $in: productIds },
+      user: userId,
+    });
 
-      const favoriteMap = new Map(
-        favorites.map((favorite) => [favorite.product._id.toString(), favorite])
-      );
+    const favoriteMap = new Map(
+      favorites.map((favorite) => [favorite.product._id.toString(), favorite])
+    );
 
-      const refinedData = await Promise.all(
-        data.map((product) => ({
-          ...product.toJSON(),
-          isFavorite: !!favoriteMap.get(product._id.toString()),
-        }))
-      );
+    const refinedData = await Promise.all(
+      data.map((product) => ({
+        ...product.toJSON(),
+        isFavorite: !!favoriteMap.get(product._id.toString()),
+      }))
+    );
 
-      return refinedData;
-    } catch (error) {
-      console.error("An error occurred:", error);
-      throw error;
-    }
+    return refinedData;
   }
 
   async deleteProduct(_id: Types.ObjectId, seller: Types.ObjectId) {
@@ -108,6 +104,125 @@ export class ProductsService {
       { _id },
       { $inc: { views: 1 } }
     );
+  }
+
+  async fetchTopDeals(query: FetchProductQueryDto, userId?: string) {
+    const { page, limit, sort, ...rest } = query;
+
+    const parsedFilter = this.parseFilter(rest);
+
+    const data = await this.productsRepository.find(
+      {
+        ...parsedFilter,
+        deletedAt: null,
+      },
+      null,
+      {
+        page,
+        skip: (page - 1) * limit,
+        sort: "-views",
+      }
+    );
+
+    const productIds = data.map((product) => product._id);
+
+    const favorites = await this.favoritesRepository.find({
+      product: { $in: productIds },
+      user: userId,
+    });
+
+    const favoriteMap = new Map(
+      favorites.map((favorite) => [favorite.product._id.toString(), favorite])
+    );
+
+    const refinedData = await Promise.all(
+      data.map((product) => ({
+        ...product.toJSON(),
+        isFavorite: !!favoriteMap.get(product._id.toString()),
+      }))
+    );
+
+    return refinedData;
+  }
+
+  async getProductRecommendations(
+    { productId, page = 1, limit = 10 }: FetchProductQueryDto,
+    userId: string
+  ) {
+    const product = await this.productsRepository.findOne({ _id: productId });
+
+    if (!product) {
+      throw new NotFoundException("Product does not exist");
+    }
+
+    const categoriesId = product.categories.map((cat) => cat._id);
+
+    const products = await this.productsRepository.find(
+      {
+        $and: [
+          { _id: { $ne: productId } },
+          { categories: { $in: categoriesId } },
+        ],
+      },
+      null,
+      {
+        page,
+        skip: (page - 1) * limit,
+        sort: { views: -1, createdAt: -1 },
+        limit: limit,
+      }
+    );
+
+    const missingProductsCount = Math.max(limit - products.length, 0);
+
+    let randomProducts = [];
+
+    const excludedIds = products.map((p) => p._id);
+
+    if (missingProductsCount > 0) {
+      randomProducts = await this.productsRepository.aggregate([
+        {
+          $match: {
+            _id: {
+              $nin: [...excludedIds, productId].map((v) => new ObjectId(v)),
+            },
+          },
+        },
+        { $sample: { size: missingProductsCount } },
+      ]);
+    }
+
+    const allProducts = [...products, ...randomProducts];
+
+    const productIds = allProducts.map((product) => product._id);
+
+    const favorites = await this.favoritesRepository.find({
+      product: { $in: productIds },
+      user: userId,
+    });
+
+    const favoriteMap = new Map(
+      favorites.map((favorite) => [favorite.product._id.toString(), favorite])
+    );
+
+    const refinedData = await Promise.all(
+      allProducts.map((product) => ({
+        ...product,
+        isFavorite: !!favoriteMap.get(product._id.toString()),
+      }))
+    );
+
+    const shuffledProducts = this.shuffleArray(refinedData);
+
+    return shuffledProducts;
+  }
+
+  shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
 
   private generateSku(name: string) {

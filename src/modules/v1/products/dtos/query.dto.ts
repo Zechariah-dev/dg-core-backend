@@ -47,4 +47,11 @@ export class FetchProductQueryDto {
     required: false,
   })
   sort?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    required: false,
+  })
+  productId: string;
 }
