@@ -5,6 +5,8 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { Product, ProductSchema } from "./schemas/product.schema";
 import { ProductsRepository } from "./products.repository";
 import { AwsS3Service } from "../../../common/services/aws-s3.service";
+import { FavoritesRepository } from "../favorites/favorites.repository";
+import { Favorite, FavoriteSchema } from "../favorites/schemas/favorite.schema";
 
 @Module({
   imports: [
@@ -13,9 +15,18 @@ import { AwsS3Service } from "../../../common/services/aws-s3.service";
         name: Product.name,
         schema: ProductSchema,
       },
+      {
+        name: Favorite.name,
+        schema: FavoriteSchema,
+      },
     ]),
   ],
   controllers: [ProductsController],
-  providers: [ProductsService, ProductsRepository, AwsS3Service],
+  providers: [
+    ProductsService,
+    ProductsRepository,
+    AwsS3Service,
+    FavoritesRepository,
+  ],
 })
 export class ProductsModule {}

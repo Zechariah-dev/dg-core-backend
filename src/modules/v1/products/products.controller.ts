@@ -35,6 +35,7 @@ import { RolesGuard } from "src/guards/role.guard";
 import { APP_ROLES } from ".././../..//common/interfaces/auth.interface";
 import { Roles } from "../../../decorators/roles..decorator";
 import { FetchProductQueryDto } from "./dtos/query.dto";
+import { OptionalJwtAuthGuard } from "src/guards/optional-auth.guard";
 
 @Controller("products")
 @ApiTags("Product")
@@ -131,9 +132,18 @@ export class ProductsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOkResponse({ description: "200, fetch product successfully" })
-  async fetchProducts(@Query() query: FetchProductQueryDto) {
-    const products = await this.productsService.find({}, {}, query);
+  async fetchProducts(
+    @Query() query: FetchProductQueryDto,
+    @Req() req: AuthRequest
+  ) {
+    const products = await this.productsService.find(
+      {},
+      {},
+      query,
+      req?.user?._id
+    );
 
     return { products, message: "Product fetched successfully" };
   }

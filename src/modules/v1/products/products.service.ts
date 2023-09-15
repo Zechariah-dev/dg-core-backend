@@ -4,10 +4,14 @@ import { CreateProductPayload } from "./dtos/create-product.dto";
 import { FilterQuery, Types, UpdateQuery } from "mongoose";
 import { Product } from "./schemas/product.schema";
 import { FetchProductQueryDto } from "./dtos/query.dto";
+import { FavoritesRepository } from "../favorites/favorites.repository";
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly productsRepository: ProductsRepository) {}
+  constructor(
+    private readonly productsRepository: ProductsRepository,
+    private readonly favoritesRepository: FavoritesRepository
+  ) {}
 
   async createProduct(payload: CreateProductPayload) {
     const sku = this.generateSku(payload.title);
@@ -34,24 +38,51 @@ export class ProductsService {
   async find(
     filter: FilterQuery<Product>,
     projection: unknown | null,
-    query: FetchProductQueryDto
+    query: FetchProductQueryDto,
+    userId?: string
   ) {
-    const { page, limit, ...rest } = query;
+    try {
+      const { page, limit, sort, ...rest } = query;
 
-    const parsedFilter = this.parseFilter(rest);
+      const parsedFilter = this.parseFilter(rest);
 
-    return this.productsRepository.find(
-      {
-        ...filter,
-        ...parsedFilter,
-        deletedAt: null,
-      },
-      projection,
-      {
-        page,
-        skip: (page - 1) * limit,
-      }
-    );
+      const data = await this.productsRepository.find(
+        {
+          ...filter,
+          ...parsedFilter,
+          deletedAt: null,
+        },
+        projection,
+        {
+          page,
+          skip: (page - 1) * limit,
+          sort: sort ?? "-createdAt",
+        }
+      );
+
+      const productIds = data.map((product) => product._id);
+
+      const favorites = await this.favoritesRepository.find({
+        product: { $in: productIds },
+        user: userId,
+      });
+
+      const favoriteMap = new Map(
+        favorites.map((favorite) => [favorite.product._id.toString(), favorite])
+      );
+
+      const refinedData = await Promise.all(
+        data.map((product) => ({
+          ...product.toJSON(),
+          isFavorite: !!favoriteMap.get(product._id.toString()),
+        }))
+      );
+
+      return refinedData;
+    } catch (error) {
+      console.error("An error occurred:", error);
+      throw error;
+    }
   }
 
   async deleteProduct(_id: Types.ObjectId, seller: Types.ObjectId) {
