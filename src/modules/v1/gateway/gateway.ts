@@ -86,10 +86,27 @@ export class MessagingGateway
 
   @OnEvent("notification.create")
   async handleNotificationCreate(payload: NotificationResponse) {
-    const notification = await this.notificationRepository.create(payload);
-    const userSocket = this.sessions.getUserSocket(payload.user);
+    const { isAdmin, ...rest } = payload;
 
-    // emit new notification to user
-    userSocket.emit("notification", notification);
+    if (isAdmin) {
+      const adminSockets = this.sessions.getAdminSockets();
+
+      Promise.all(
+        adminSockets.map(async (socket) => {
+          const notification = await this.notificationRepository.create({
+            ...rest,
+            user: socket.user._id,
+          });
+
+          socket.emit("notification", notification);
+        })
+      );
+    } else {
+      const notification = await this.notificationRepository.create(rest);
+      const userSocket = this.sessions.getUserSocket(rest.user);
+
+      // emit new notification to user
+      userSocket.emit("notification", notification);
+    }
   }
 }

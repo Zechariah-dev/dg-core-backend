@@ -7,6 +7,7 @@ export interface IGatewaySessionManager {
   setUserSocket(id: Types.ObjectId, socket: AuthenticatedSocket): void;
   removeUserSocket(id: Types.ObjectId): void;
   getSockets(): Map<Types.ObjectId, AuthenticatedSocket>;
+  getAdminSockets(): AuthenticatedSocket[];
 }
 
 @Injectable()
@@ -28,5 +29,21 @@ export class GatewaySessionManager implements IGatewaySessionManager {
 
   getSockets(): Map<Types.ObjectId, AuthenticatedSocket> {
     return this.sessions;
+  }
+
+  getAdminSockets(): AuthenticatedSocket[] {
+    let sockets = [];
+
+    const values = this.sessions.values();
+    const size = this.sessions.size;
+
+    for (let i = 0; i < size; i++) {
+      const value = values.next().value;
+
+      if (value.role === "admin") sockets.push(value);
+      return;
+    }
+
+    return sockets;
   }
 }

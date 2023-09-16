@@ -37,7 +37,7 @@ import { AwsS3Service } from "../../../common/services/aws-s3.service";
 import { Roles } from "../../../decorators/roles..decorator";
 import { APP_ROLES } from "../../../common/interfaces/auth.interface";
 import { RolesGuard } from "../../../guards/role.guard";
-import { ConfigService } from "@nestjs/config";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Controller("forums")
 @ApiTags("Forum")
@@ -45,7 +45,7 @@ export class ForumsController {
   constructor(
     private readonly forumsService: ForumsService,
     private readonly awsService: AwsS3Service,
-    private readonly configService: ConfigService
+    private readonly events: EventEmitter2
   ) {}
 
   @Post()
@@ -197,6 +197,12 @@ export class ForumsController {
       },
       payload
     );
+
+    this.events.emit("notification.create", {
+      title: "New Hot Drop!!!",
+      message: "you have a pending hot drop awaiting review",
+      isAdmin: true,
+    });
 
     return { forum, message: "Forum has been updated successfully" };
   }

@@ -16,7 +16,8 @@ export type CreateMessageResponse = {
 };
 
 export type NotificationResponse = {
-  user: Types.ObjectId;
+  user?: Types.ObjectId;
   title: string;
   body: string;
+  isAdmin?: boolean;
 };
