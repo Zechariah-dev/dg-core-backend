@@ -12,6 +12,9 @@ export class Notification extends Document {
   @Prop({ type: String, required: true })
   body: string;
 
+  @Prop({ type: String, required: false })
+  link: string;
+
   @Prop({ type: Date, required: false })
   readAt: Date;
 

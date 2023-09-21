@@ -76,6 +76,13 @@ export class ForumsController {
       creator: req.user._id,
     });
 
+    this.events.emit("notification.create", {
+      title: "New Hot Drop!!",
+      message: "you have a pending hot drop awaiting review",
+      isAdmin: true,
+      link: `/hot-drop/${forum._id}`,
+    });
+
     return { forum, message: "Forum created successfully" };
   }
 
@@ -174,7 +181,7 @@ export class ForumsController {
     )
     file?: Express.Multer.File
   ) {
-    let payload = { ...body };
+    const payload = { ...body };
 
     if (file) {
       const image = await this.awsService.uploadImage(file);
@@ -202,6 +209,7 @@ export class ForumsController {
       title: "New Hot Drop!!!",
       message: "you have a pending hot drop awaiting review",
       isAdmin: true,
+      link: `/hot-drop/${forum._id}`,
     });
 
     return { forum, message: "Forum has been updated successfully" };

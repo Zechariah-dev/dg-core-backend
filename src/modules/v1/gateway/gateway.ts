@@ -15,6 +15,8 @@ import { CreateMessageResponse, NotificationResponse } from "../../../types";
 import { MessagesRepository } from "../messages/messages.repository";
 import { ConversationRepository } from "../conversations/conversation.repository";
 import { NotificationsRepository } from "../notifications/notification.repository";
+import { UsersRepository } from "../users/users.repository";
+import { APP_ROLES } from "src/common/interfaces/auth.interface";
 
 @WebSocketGateway({
   cors: {
@@ -33,7 +35,8 @@ export class MessagingGateway
     private readonly sessions: GatewaySessionManager,
     private readonly messagesRepository: MessagesRepository,
     private readonly conversationsRepository: ConversationRepository,
-    private readonly notificationRepository: NotificationsRepository
+    private readonly notificationRepository: NotificationsRepository,
+    private readonly usersRepository: UsersRepository
   ) {}
 
   @WebSocketServer()
@@ -89,16 +92,21 @@ export class MessagingGateway
     const { isAdmin, ...rest } = payload;
 
     if (isAdmin) {
-      const adminSockets = this.sessions.getAdminSockets();
+      const adminAccounts = await this.usersRepository.find({
+        role: APP_ROLES.ADMIN,
+      });
 
       Promise.all(
-        adminSockets.map(async (socket) => {
+        adminAccounts.map(async (admin) => {
+          const socket = await this.sessions.getUserSocket(admin._id);
           const notification = await this.notificationRepository.create({
             ...rest,
-            user: socket.user._id,
+            user: admin._id,
           });
 
-          socket.emit("notification", notification);
+          if (socket) {
+            socket.emit("notification", notification);
+          }
         })
       );
     } else {
