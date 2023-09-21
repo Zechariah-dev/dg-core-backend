@@ -13,31 +13,31 @@ export class ReviewsRepository extends BaseRepository<ReviewDocumet> {
     super(reviewsModel);
   }
 
-  async productReviews(product: Types.ObjectId) {
-    return this.reviewsModel.find({ product: product.toString() }).populate([
+  async creatorReviews(creator: Types.ObjectId) {
+    return this.reviewsModel.find({ creator: creator.toString() }).populate([
       {
         path: "user",
-        select: "fullname image",
+        select: "fullname email image_id phone",
       },
       {
-        path: "product",
-        select: "title images",
+        path: "creator",
+        select: "fullname email image _id phone",
       },
     ]);
   }
 
   async userReviews(user: Types.ObjectId) {
     return this.reviewsModel.find({ user }).populate({
-      path: "product",
-      select: "title images",
+      path: "creator",
+      select: "fullname email image _id phone",
     });
   }
 
-  async productAverageRating(product: string) {
+  async creatorAverageRating(creator: string) {
     return this.reviewsModel.aggregate([
       {
         $match: {
-          product,
+          creator,
         },
       },
       {

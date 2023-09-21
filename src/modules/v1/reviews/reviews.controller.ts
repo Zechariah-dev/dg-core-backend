@@ -22,6 +22,9 @@ import {
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import ParseObjectIdPipe from "src/pipes/parse-object-id.pipe";
 import { Types } from "mongoose";
+import { RolesGuard } from "../../../guards/role.guard";
+import { Roles } from "../../../decorators/roles..decorator";
+import { APP_ROLES } from "../../../common/interfaces/auth.interface";
 
 @Controller("reviews")
 @ApiTags("Reviews")
@@ -41,23 +44,24 @@ export class ReviewsController {
     return { review, message: "Review was created successfully" };
   }
 
-  @Get("/product/:productId")
+  @Get("/creator/:creatorId")
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
-    description: "200, Product reviews  was fetched successfuly",
+    description: "200, Creator reviews  was fetched successfuly",
   })
-  async getProductReviews(
-    @Param("productId", ParseObjectIdPipe) productId: Types.ObjectId
+  async getCreatorReviews(
+    @Param("creatorId", ParseObjectIdPipe) creatorId: Types.ObjectId
   ) {
-    const reviews = await this.reviewsService.fetchProductReviews(productId);
+    const reviews = await this.reviewsService.fetchCreatorReviews(creatorId);
 
-    return { reviews, message: "Product reviews was fetched successfully" };
+    return { reviews, message: "Creator reviews was fetched successfully" };
   }
 
   @Get("/user")
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: "200, User reviews was fetched successfully" })
-  @UseGuards(JwtAuthGuard)
+  @Roles(APP_ROLES.CONSUMER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async getUserReviews(@Req() req: AuthRequest) {
     const reviews = await this.reviewsService.fethUserReviews(req.user._id);
 

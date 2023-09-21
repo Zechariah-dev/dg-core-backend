@@ -22,9 +22,9 @@ export class Review extends Document {
   @Prop({
     type: Types.ObjectId,
     required: true,
-    ref: "Product",
+    ref: "User",
   })
-  product: Types.ObjectId;
+  creator: Types.ObjectId;
 
   @Prop({
     type: Types.ObjectId,

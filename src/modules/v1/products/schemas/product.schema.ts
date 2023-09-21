@@ -118,12 +118,6 @@ export class Product extends Document {
   })
   seller: Types.ObjectId;
 
-  @Prop({
-    required: false,
-    default: 0,
-  })
-  rating: number;
-
   @Prop()
   deletedAt?: Date;
 

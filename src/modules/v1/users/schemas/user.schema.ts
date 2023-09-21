@@ -77,6 +77,9 @@ export class User extends Document {
   @Prop({ type: Boolean, default: true })
   isActive: boolean;
 
+  @Prop({ type: Number, default: 0, required: false })
+  rating: number;
+
   @Prop({ type: Types.ObjectId, ref: "Business" })
   business: Types.ObjectId;
 

@@ -4,8 +4,8 @@ import { ReviewsController } from "./reviews.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Review, ReviewSchema } from "./schemas/review.schema";
 import { ReviewsRepository } from "./reviews.repository";
-import { ProductsRepository } from "../products/products.repository";
-import { Product, ProductSchema } from "../products/schemas/product.schema";
+import { UserSchema, User } from "../users/schemas/user.schema";
+import { UsersRepository } from "../users/users.repository";
 
 @Module({
   imports: [
@@ -15,12 +15,12 @@ import { Product, ProductSchema } from "../products/schemas/product.schema";
         schema: ReviewSchema,
       },
       {
-        name: Product.name,
-        schema: ProductSchema,
+        name: User.name,
+        schema: UserSchema,
       },
     ]),
   ],
   controllers: [ReviewsController],
-  providers: [ReviewsService, ReviewsRepository, ProductsRepository],
+  providers: [ReviewsService, ReviewsRepository, UsersRepository],
 })
 export class ReviewsModule {}
