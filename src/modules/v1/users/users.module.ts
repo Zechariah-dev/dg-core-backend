@@ -14,6 +14,8 @@ import {
 import { ConversationRepository } from "../conversations/conversation.repository";
 import { Product, ProductSchema } from "../products/schemas/product.schema";
 import { ProductsRepository } from "../products/products.repository";
+import { SettingsRepository } from "src/common/repositories/setting.repository";
+import { Setting, SettingSchema } from "../../../common/schemas/setting.schema";
 
 @Module({
   imports: [
@@ -34,6 +36,10 @@ import { ProductsRepository } from "../products/products.repository";
         name: Product.name,
         schema: ProductSchema,
       },
+      {
+        name: Setting.name,
+        schema: SettingSchema,
+      },
     ]),
   ],
   controllers: [UsersController],
@@ -44,6 +50,7 @@ import { ProductsRepository } from "../products/products.repository";
     BusinessRepository,
     ConversationRepository,
     ProductsRepository,
+    SettingsRepository,
   ],
 })
 export class UsersModule {}

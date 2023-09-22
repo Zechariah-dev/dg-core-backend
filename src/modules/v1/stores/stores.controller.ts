@@ -100,6 +100,18 @@ export class StoresController {
     @Body() updateStorePayload: UpdateStoreDto,
     @Req() req: AuthRequest
   ) {
+    if (updateStorePayload.creatorTag) {
+      const tagExists = await this.storesService.findByCreatorTag(
+        updateStorePayload?.creatorTag
+      );
+
+      if (tagExists && tagExists._id.toString() !== id.toString()) {
+        throw new BadRequestException(
+          "Store creatorTag already in use, kindly pick another"
+        );
+      }
+    }
+
     const store = await this.storesService.update(
       id,
       req.user._id,

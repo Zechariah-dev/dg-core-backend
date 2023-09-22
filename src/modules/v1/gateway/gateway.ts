@@ -16,7 +16,8 @@ import { MessagesRepository } from "../messages/messages.repository";
 import { ConversationRepository } from "../conversations/conversation.repository";
 import { NotificationsRepository } from "../notifications/notification.repository";
 import { UsersRepository } from "../users/users.repository";
-import { APP_ROLES } from "src/common/interfaces/auth.interface";
+import { APP_ROLES } from "../../../common/interfaces/auth.interface";
+import { SettingsRepository } from "../../../common/repositories/setting.repository";
 
 @WebSocketGateway({
   cors: {
@@ -36,7 +37,8 @@ export class MessagingGateway
     private readonly messagesRepository: MessagesRepository,
     private readonly conversationsRepository: ConversationRepository,
     private readonly notificationRepository: NotificationsRepository,
-    private readonly usersRepository: UsersRepository
+    private readonly usersRepository: UsersRepository,
+    private readonly settingsRepository: SettingsRepository
   ) {}
 
   @WebSocketServer()
@@ -98,23 +100,38 @@ export class MessagingGateway
 
       Promise.all(
         adminAccounts.map(async (admin) => {
-          const socket = await this.sessions.getUserSocket(admin._id);
           const notification = await this.notificationRepository.create({
             ...rest,
             user: admin._id,
           });
+          const setting = await this.settingsRepository.findOne({
+            user: admin._id,
+          });
 
-          if (socket) {
-            socket.emit("notification", notification);
+          if (setting.notification.pushNotification) {
+            const socket = await this.sessions.getUserSocket(admin._id);
+            if (socket) {
+              socket.emit("notification", notification);
+            }
           }
         })
       );
     } else {
       const notification = await this.notificationRepository.create(rest);
-      const userSocket = this.sessions.getUserSocket(rest.user);
+      const setting = await this.settingsRepository.findOne({
+        user: rest.user,
+      });
 
-      // emit new notification to user
-      userSocket.emit("notification", notification);
+      if (setting.notification.pushNotification) {
+        const userSocket = this.sessions.getUserSocket(rest.user);
+
+        if (userSocket) {
+          // emit new notification to user
+          userSocket.emit("notification", notification);
+        }
+      }
+
+      //TODO: email notification forwarding
     }
   }
 }

@@ -17,6 +17,8 @@ import {
   NotificationSchema,
 } from "../notifications/schemas/notification.schema";
 import { NotificationsRepository } from "../notifications/notification.repository";
+import { SettingsRepository } from "../../../common/repositories/setting.repository";
+import { Setting, SettingSchema } from "../../../common/schemas/setting.schema";
 
 @Module({
   imports: [
@@ -37,6 +39,10 @@ import { NotificationsRepository } from "../notifications/notification.repositor
         name: Notification.name,
         schema: NotificationSchema,
       },
+      {
+        name: Setting.name,
+        schema: SettingSchema,
+      },
     ]),
   ],
   providers: [
@@ -46,7 +52,8 @@ import { NotificationsRepository } from "../notifications/notification.repositor
     MessagesRepository,
     ConversationRepository,
     UsersRepository,
-    NotificationsRepository
+    NotificationsRepository,
+    SettingsRepository,
   ],
   exports: [MessagingGateway, GatewaySessionManager],
 })

@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
   UploadedFile,
@@ -27,6 +28,7 @@ import * as bcrypt from "bcrypt";
 import { Roles } from "src/decorators/roles..decorator";
 import { APP_ROLES } from "src/common/interfaces/auth.interface";
 import { RolesGuard } from "../../../guards/role.guard";
+import { UpdateUserSettingDto } from "./dtos/update-user-setting.dto";
 
 @Controller("users")
 @ApiTags("User")
@@ -174,5 +176,19 @@ export class UsersController {
     const insights = await this.usersService.getInsights(req.user._id);
 
     return { message: "User insights data fetched successfully", insights };
+  }
+
+  @Patch("/settings")
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({
+    description: "200, User settings has been updated successfully",
+  })
+  async updateUserSettings(
+    @Body() body: UpdateUserSettingDto,
+    @Req() req: AuthRequest
+  ) {
+    const setting = await this.usersService.updateSetting(req.user._id, body);
+
+    return { message: "User settings has been updated successfully", setting };
   }
 }

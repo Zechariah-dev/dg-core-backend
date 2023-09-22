@@ -93,6 +93,9 @@ export class User extends Document {
     accessToken: string;
     refreshToken: string;
   };
+
+  @Prop({ type: Types.ObjectId, ref: "Setting" })
+  setting: Types.ObjectId;
 }
 
 export type UserDocument = User & Document;

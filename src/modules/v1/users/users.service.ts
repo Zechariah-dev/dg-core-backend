@@ -9,6 +9,8 @@ import { BusinessRepository } from "../business/business.repository";
 import { ConversationRepository } from "../conversations/conversation.repository";
 import { ProductsRepository } from "../products/products.repository";
 import { APP_ROLES } from "../../../common/interfaces/auth.interface";
+import { SettingsRepository } from "src/common/repositories/setting.repository";
+import { UpdateUserSettingDto } from "./dtos/update-user-setting.dto";
 
 @Injectable()
 export class UsersService {
@@ -17,7 +19,8 @@ export class UsersService {
     private readonly businessRepository: BusinessRepository,
     private readonly configService: ConfigService,
     private readonly conversationRepository: ConversationRepository,
-    private readonly productRepository: ProductsRepository
+    private readonly productRepository: ProductsRepository,
+    private readonly settingsRepository: SettingsRepository
   ) {}
 
   async findByEmail(email: string): Promise<any> {
@@ -49,8 +52,17 @@ export class UsersService {
       await business.save();
 
       user.business = business._id;
-      user = await user.save();
     }
+
+    const setting = await this.settingsRepository.create({
+      user: user._id,
+      notification: {
+        email: false,
+        pushNotification: true,
+      },
+    });
+    user.setting = setting._id;
+    user = await user.save();
 
     return user;
   }
@@ -119,5 +131,12 @@ export class UsersService {
     );
 
     return { conversationInsight: conversationInsight[0], viewsCount };
+  }
+
+  async updateSetting(user: Types.ObjectId, payload: UpdateUserSettingDto) {
+    return await this.settingsRepository.findOneAndUpdate(
+      { user },
+      { ...payload }
+    );
   }
 }

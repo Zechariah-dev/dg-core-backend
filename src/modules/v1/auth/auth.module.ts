@@ -20,6 +20,8 @@ import {
 } from "../conversations/schemas/conversation.schema";
 import { ProductsRepository } from "../products/products.repository";
 import { Product, ProductSchema } from "../products/schemas/product.schema";
+import { Setting, SettingSchema } from "../../../common/schemas/setting.schema";
+import { SettingsRepository } from "../../../common/repositories/setting.repository";
 
 @Module({
   imports: [
@@ -39,6 +41,10 @@ import { Product, ProductSchema } from "../products/schemas/product.schema";
       {
         name: Product.name,
         schema: ProductSchema,
+      },
+      {
+        name: Setting.name,
+        schema: SettingSchema,
       },
     ]),
     JwtModule.registerAsync({
@@ -61,6 +67,7 @@ import { Product, ProductSchema } from "../products/schemas/product.schema";
     BusinessService,
     ConversationRepository,
     ProductsRepository,
+    SettingsRepository
   ],
 })
 export class AuthModule {}

@@ -71,6 +71,10 @@ export class StoresService {
     return this.productsRepository.find({ store });
   }
 
+  async findByCreatorTag(creatorTag: string) {
+    return this.storesRepository.findOne({ creatorTag });
+  }
+
   private parseFilter(query: Partial<FetchStoreQueryDto>): object {
     const filter = {};
 

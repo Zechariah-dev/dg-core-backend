@@ -25,6 +25,9 @@ export class UsersRepository extends BaseRepository<UserDocument> {
           path: "business",
           select: "-__v -createdAt -updatedAt",
         },
+        {
+          path: "setting",
+        },
       ])
       .lean()
       .exec();
@@ -40,6 +43,9 @@ export class UsersRepository extends BaseRepository<UserDocument> {
       .populate([
         {
           path: "business",
+        },
+        {
+          path: "setting",
         },
       ])
       .lean()
@@ -60,6 +66,9 @@ export class UsersRepository extends BaseRepository<UserDocument> {
         {
           path: "business",
           select: "-__v -createdAt -updatedAt",
+        },
+        {
+          path: "setting",
         },
       ])
       .lean();
