@@ -21,7 +21,7 @@ export class UsersService {
     private readonly conversationRepository: ConversationRepository,
     private readonly productRepository: ProductsRepository,
     private readonly settingsRepository: SettingsRepository
-  ) {}
+  ) { }
 
   async findByEmail(email: string): Promise<any> {
     return this.usersRepository.findOne({ email });
@@ -138,5 +138,12 @@ export class UsersService {
       { user },
       { ...payload }
     );
+  }
+
+  async getCreatorProfile(_id: Types.ObjectId) {
+    const profile = await this.usersRepository.findOne({ _id });
+    const products = await this.productRepository.find({ seller: _id })
+
+    return { profile, products }
   }
 }

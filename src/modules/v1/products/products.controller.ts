@@ -23,7 +23,6 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
-  ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
@@ -44,7 +43,7 @@ export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
     private readonly awsS3Service: AwsS3Service
-  ) {}
+  ) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

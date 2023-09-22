@@ -29,6 +29,9 @@ import { Roles } from "src/decorators/roles..decorator";
 import { APP_ROLES } from "src/common/interfaces/auth.interface";
 import { RolesGuard } from "../../../guards/role.guard";
 import { UpdateUserSettingDto } from "./dtos/update-user-setting.dto";
+import { OptionalJwtAuthGuard } from "../../../guards/optional-auth.guard";
+import ParseObjectIdPipe from "../../../pipes/parse-object-id.pipe";
+import { Types } from "mongoose";
 
 @Controller("users")
 @ApiTags("User")
@@ -37,7 +40,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly awsS3Service: AwsS3Service
-  ) {}
+  ) { }
 
   @Post("/profile")
   @HttpCode(HttpStatus.OK)
@@ -190,5 +193,14 @@ export class UsersController {
     const setting = await this.usersService.updateSetting(req.user._id, body);
 
     return { message: "User settings has been updated successfully", setting };
+  }
+
+  @Get("/creator/profile/:id")
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOkResponse({ description: "200, Creator profile fetched successfully" })
+  async getCreatorProfile(@Param("id", ParseObjectIdPipe) id: Types.ObjectId) {
+    const response = await this.usersService.getCreatorProfile(id);
+
+    return { ...response, message: "Creator profile fetched successfully" }
   }
 }
