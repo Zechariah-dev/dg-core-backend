@@ -5,7 +5,6 @@ import {
 } from "./schemas/conversation.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import {
-  Document,
   FilterQuery,
   Model,
   QueryOptions,

@@ -6,6 +6,12 @@ export class Store extends Document {
   @Prop({ type: String, required: true, unique: true, index: true })
   name: string;
 
+  @Prop({ type: String, required: false })
+  image: string;
+
+  @Prop({ type: String, required: false })
+  coverImage: string;
+
   @Prop({ type: String, requried: false })
   bio: string;
 

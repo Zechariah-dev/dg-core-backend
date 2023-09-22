@@ -15,6 +15,8 @@ import {
   Param,
   NotFoundException,
   Patch,
+  UseInterceptors,
+  UploadedFiles,
 } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -32,11 +34,17 @@ import { RolesGuard } from "../../../guards/role.guard";
 import { FetchStoreQueryDto } from "./dtos/query.dto";
 import { Types } from "mongoose";
 import { UpdateStoreDto } from "./dtos/update-store.dto";
+import ParseObjectIdPipe from "../../../pipes/parse-object-id.pipe";
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { AwsS3Service } from "../../../common/services/aws-s3.service";
 
 @Controller("stores")
 @ApiTags("Store")
 export class StoresController {
-  constructor(private readonly storesService: StoresService) {}
+  constructor(
+    private readonly storesService: StoresService,
+    private readonly awsS3Service: AwsS3Service
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -69,6 +77,57 @@ export class StoresController {
     );
 
     return { store, message: "User Store created successfully" };
+  }
+
+  @Post("/images/:id")
+  @HttpCode(HttpStatus.CREATED)
+  @Roles(APP_ROLES.CREATOR)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      {
+        name: "coverImage",
+        maxCount: 1,
+      },
+      {
+        name: "image",
+        maxCount: 1,
+      },
+    ])
+  )
+  @ApiBadRequestResponse({ description: "400, Store doesn't exist" })
+  @ApiOkResponse({ description: "200, User store updated successfully" })
+  async uploadStoreImages(
+    @Param("id", ParseObjectIdPipe) id: Types.ObjectId,
+    @UploadedFiles()
+    files: { coverImage: Express.Multer.File[]; image: Express.Multer.File[] },
+    @Req() req: AuthRequest
+  ) {
+    const storeExists = await this.storesService.findOne({
+      _id: id,
+      creator: req.user._id,
+    });
+
+    if (!storeExists) {
+      throw new BadRequestException("Store doesn't exist");
+    }
+    const payload = {};
+
+    if (files.coverImage) {
+      const link = await this.awsS3Service.uploadImage(files.coverImage[0]);
+      Object.assign(payload, { coverImage: link });
+    }
+
+    if (files.image) {
+      const link = await this.awsS3Service.uploadImage(files.image[0]);
+      Object.assign(payload, { image: link });
+    }
+
+    const store = await this.storesService.update(id, req.user._id, {
+      ...payload,
+    });
+
+    return { message: "User store updated successfully", store };
   }
 
   @Get()
