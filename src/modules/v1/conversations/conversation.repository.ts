@@ -4,7 +4,14 @@ import {
   ConversationDocument,
 } from "./schemas/conversation.schema";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, QueryOptions, Types } from "mongoose";
+import {
+  Document,
+  FilterQuery,
+  Model,
+  QueryOptions,
+  Types,
+  UpdateQuery,
+} from "mongoose";
 
 export class ConversationRepository extends BaseRepository<ConversationDocument> {
   constructor(
@@ -44,6 +51,32 @@ export class ConversationRepository extends BaseRepository<ConversationDocument>
     return this.conversationModel
       .find(query, projections, options)
       .sort("lastMessageSentAt")
+      .populate([
+        {
+          path: "creator",
+          select: "image fullname phone _id email",
+        },
+        {
+          path: "recipient",
+          select: "image fullname phone _id email",
+        },
+        {
+          path: "lastMessageSent",
+        },
+      ])
+      .lean();
+  }
+
+  public async findOneAndUpdate(
+    query: FilterQuery<ConversationDocument>,
+    payload: UpdateQuery<ConversationDocument>,
+    options?: QueryOptions<unknown>
+  ): Promise<ConversationDocument> {
+    return this.conversationModel
+      .findOneAndUpdate(query, payload, {
+        new: true,
+        ...options,
+      })
       .populate([
         {
           path: "creator",
