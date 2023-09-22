@@ -18,7 +18,7 @@ export class ConversationsService {
     private readonly conversationRepository: ConversationRepository,
     private readonly usersRepository: UsersRepository,
     private readonly messagesRepository: MessagesRepository
-  ) {}
+  ) { }
 
   async getConversations(id: Types.ObjectId, role: string, search?: string) {
     const aggregation: Array<any> = [
@@ -106,6 +106,12 @@ export class ConversationsService {
 
       aggregation.push({ $match: matchQuery });
     }
+
+    aggregation.push({
+      $sort: {
+        lastMessageSentAt: -1
+      }
+    })
 
     const conversations = await this.conversationRepository.aggregate(
       aggregation

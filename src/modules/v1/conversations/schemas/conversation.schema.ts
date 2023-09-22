@@ -12,7 +12,7 @@ export class Conversation extends Document {
   @Prop({ type: Types.ObjectId, ref: "Message" })
   lastMessageSent: Types.ObjectId;
 
-  @Prop({ type: Date })
+  @Prop({ type: Date, default: new Date() })
   lastMessageSentAt: Date;
 }
 
