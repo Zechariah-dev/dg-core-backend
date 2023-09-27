@@ -12,7 +12,7 @@ export class ProductsRepository extends BaseRepository<ProductDocument> {
 
   public async find(
     query: FilterQuery<ProductDocument>,
-    projections?: unknown | null,
+    projections?: any,
     options?: QueryOptions<unknown>
   ): Promise<ProductDocument[]> {
     return this.productsModel
