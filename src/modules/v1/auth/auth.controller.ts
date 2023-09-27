@@ -186,7 +186,7 @@ export class AuthController {
     }
 
     if (!user.isVerified) {
-      throw new BadRequestException("Email is not verified");
+      throw new BadRequestException("Email needs to be verified");
     }
 
     if (user.role === "creator" && !user.business.isApproved) {
