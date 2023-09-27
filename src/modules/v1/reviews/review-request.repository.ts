@@ -4,7 +4,7 @@ import {
     ReviewRequestDocument,
 } from "./schemas/review-request.schema";
 import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
+import {FilterQuery, Model} from "mongoose";
 import {Injectable} from "@nestjs/common";
 
 @Injectable()
@@ -14,5 +14,11 @@ export class ReviewRequestsRepository extends BaseRepository<ReviewRequestDocume
         private reviewRequestModel: Model<ReviewRequestDocument>
     ) {
         super(reviewRequestModel);
+    }
+
+    public  findOne(query: FilterQuery<ReviewRequestDocument>, projections?: any) {
+        return this.reviewRequestModel.findOne(query, projections).populate([{
+            path: "products"
+        }])
     }
 }

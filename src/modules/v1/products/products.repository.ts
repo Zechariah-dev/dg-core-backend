@@ -36,7 +36,7 @@ export class ProductsRepository extends BaseRepository<ProductDocument> {
 
   public findOne(
     query: FilterQuery<ProductDocument>,
-    projections?: unknown
+    projections?: any
   ): Promise<ProductDocument> {
     return this.productsModel
       .findOne(query, projections)

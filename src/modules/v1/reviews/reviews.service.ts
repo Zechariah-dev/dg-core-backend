@@ -2,20 +2,28 @@ import {UsersRepository} from "../users/users.repository";
 import {ReviewRequestsRepository} from "./review-request.repository";
 import {CreateReviewPayload} from "./reviews.interface";
 import {ReviewsRepository} from "./reviews.repository";
-import {Injectable, NotFoundException} from "@nestjs/common";
+import {BadRequestException, Injectable, NotFoundException} from "@nestjs/common";
 import {Types} from "mongoose";
+import {ProductsRepository} from "../products/products.repository";
 
 @Injectable()
 export class ReviewsService {
     constructor(
         private readonly reviewsRepository: ReviewsRepository,
         private readonly usersRepository: UsersRepository,
-        private readonly reviewRequestsRepository: ReviewRequestsRepository
+        private readonly reviewRequestsRepository: ReviewRequestsRepository,
+        private readonly  productsRepository: ProductsRepository
     ) {
     }
 
     async create(payload: CreateReviewPayload) {
-        const review = await this.reviewsRepository.create(payload);
+        const product = await this.productsRepository.findOne({_id: payload.product})
+
+        if (!product) {
+            throw new BadRequestException("Product doesn't exist")
+        }
+
+        const review = await this.reviewsRepository.create({...payload, creator: product.seller});
 
         const averageRating = await this.reviewsRepository.creatorAverageRating(
             review.creator
@@ -71,9 +79,9 @@ export class ReviewsService {
                 });
 
                 if (review) {
-                    review = await this.reviewsRepository.findOneAndUpdate({_id: review._id}, {rating: r.rating})
+                    await this.reviewsRepository.findOneAndUpdate({_id: review._id}, {rating: r.rating})
                 } else {
-                    review = await this.reviewsRepository.create({
+                    await this.reviewsRepository.create({
                         user: userId,
                         product: r.product,
                         rating: r.rating,
