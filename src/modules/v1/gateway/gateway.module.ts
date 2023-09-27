@@ -19,6 +19,11 @@ import {
 import { NotificationsRepository } from "../notifications/notification.repository";
 import { SettingsRepository } from "../../../common/repositories/setting.repository";
 import { Setting, SettingSchema } from "../../../common/schemas/setting.schema";
+import { ReviewRequestsRepository } from "../reviews/review-request.repository";
+import {
+  ReviewRequest,
+  ReviewRequestSchema,
+} from "../reviews/schemas/review-request.schema";
 
 @Module({
   imports: [
@@ -43,6 +48,10 @@ import { Setting, SettingSchema } from "../../../common/schemas/setting.schema";
         name: Setting.name,
         schema: SettingSchema,
       },
+      {
+        name: ReviewRequest.name,
+        schema: ReviewRequestSchema,
+      },
     ]),
   ],
   providers: [
@@ -54,6 +63,7 @@ import { Setting, SettingSchema } from "../../../common/schemas/setting.schema";
     UsersRepository,
     NotificationsRepository,
     SettingsRepository,
+    ReviewRequestsRepository,
   ],
   exports: [MessagingGateway, GatewaySessionManager],
 })

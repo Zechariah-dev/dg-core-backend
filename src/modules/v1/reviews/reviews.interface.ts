@@ -1,5 +1,5 @@
 export interface CreateReviewPayload {
-  creator: string;
+  product: string;
   content: string;
   rating: number;
   user: string;

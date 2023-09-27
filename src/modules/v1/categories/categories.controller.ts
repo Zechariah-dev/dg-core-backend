@@ -15,20 +15,14 @@ import {
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
-import {
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-} from "@nestjs/swagger";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { Types } from "mongoose";
-
-import { CategoriesService } from "./categories.service";
-import { CreateCategoryDto } from "./dtos/create-category.dto";
-import { AwsS3Service } from "../../../common/services/aws-s3.service";
+import {ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags,} from "@nestjs/swagger";
+import {FileInterceptor} from "@nestjs/platform-express";
+import {Types} from "mongoose";
+import {CategoriesService} from "./categories.service";
+import {CreateCategoryDto} from "./dtos/create-category.dto";
+import {AwsS3Service} from "../../../common/services/aws-s3.service";
 import ParseObjectIdPipe from "../../../pipes/parse-object-id.pipe";
-import { UpdateCategoryDto } from "./dtos/update-category.dto";
+import {UpdateCategoryDto} from "./dtos/update-category.dto";
 
 @Controller("categories")
 @ApiTags("Categories")
@@ -120,8 +114,7 @@ export class CategoriesController {
     const updatedFields = updateCategoryDto;
 
     if (image) {
-      const location = await this.awsS3Service.uploadImage(image);
-      updatedFields.image = location;
+      updatedFields.image = await this.awsS3Service.uploadImage(image);
     }
 
     const category = await this.categoriesService.update(id, updatedFields);

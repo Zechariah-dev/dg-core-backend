@@ -1,202 +1,257 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
-import { ConversationRepository } from "./conversation.repository";
-import { UpdateQuery, Types } from "mongoose";
-import { createConversationDto } from "./dtos/create-conversation.dto";
-import { UsersRepository } from "../users/users.repository";
-import { User } from "../users/schemas/user.schema";
-import { MessagesRepository } from "../messages/messages.repository";
-import { Conversation } from "./schemas/conversation.schema";
-import { ObjectId } from "mongodb";
+import {BadRequestException, Injectable, Logger, NotFoundException,} from "@nestjs/common";
+import {ConversationRepository} from "./conversation.repository";
+import {Types, UpdateQuery} from "mongoose";
+import {createConversationDto} from "./dtos/create-conversation.dto";
+import {UsersRepository} from "../users/users.repository";
+import {User} from "../users/schemas/user.schema";
+import {MessagesRepository} from "../messages/messages.repository";
+import {Conversation} from "./schemas/conversation.schema";
+import {ObjectId} from "mongodb";
+import {ReviewRequestsRepository} from "../reviews/review-request.repository";
+import {MailerService} from "@nestjs-modules/mailer";
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class ConversationsService {
-  constructor(
-    private readonly conversationRepository: ConversationRepository,
-    private readonly usersRepository: UsersRepository,
-    private readonly messagesRepository: MessagesRepository
-  ) { }
+    private readonly logger = new Logger(ConversationsService.name);
 
-  async getConversations(id: Types.ObjectId, role: string, search?: string) {
-    const aggregation: Array<any> = [
-      {
-        $match: {
-          $or: [
-            {
-              creator: new ObjectId(id),
-            },
-            {
-              recipient: new ObjectId(id),
-            },
-          ],
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "recipient",
-          foreignField: "_id",
-          as: "recipient",
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "creator",
-          foreignField: "_id",
-          as: "creator",
-        },
-      },
-      {
-        $unwind: {
-          path: "$recipient",
-        },
-      },
-      {
-        $unwind: {
-          path: "$creator",
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          "recipient.fullname": 1,
-          "recipient.image": 1,
-          "recipient._id": 1,
-          "recipient.email": 1,
-          "recipient.phone": 1,
-          "creator.fullname": 1,
-          "creator.image": 1,
-          "creator._id": 1,
-          "creator.email": 1,
-          "creator.phone": 1,
-        },
-      },
-    ];
-
-    // search conversation based on the user role and search query
-    if (search && role === "creator") {
-      const searchRegex = new RegExp(search, "i");
-
-      const matchQuery = {
-        $or: [
-          { "recipient.fullname": { $regex: searchRegex } },
-          { "recipient.email": { $regex: searchRegex } },
-        ],
-      };
-
-      aggregation.push({ $match: matchQuery });
+    constructor(
+        private readonly conversationRepository: ConversationRepository,
+        private readonly usersRepository: UsersRepository,
+        private readonly messagesRepository: MessagesRepository,
+        private readonly reviewRequestRepository: ReviewRequestsRepository,
+        private readonly mailerService: MailerService,
+        private readonly configService: ConfigService
+    ) {
     }
 
-    // search conversation based on the user role and search query
-    if (search && role === "consumer") {
-      const searchRegex = new RegExp(search, "i");
+    async getConversations(id: Types.ObjectId, role: string, search?: string) {
+        const aggregation: Array<any> = [
+            {
+                $match: {
+                    $or: [
+                        {
+                            creator: new ObjectId(id),
+                        },
+                        {
+                            recipient: new ObjectId(id),
+                        },
+                    ],
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "recipient",
+                    foreignField: "_id",
+                    as: "recipient",
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "creator",
+                    foreignField: "_id",
+                    as: "creator",
+                },
+            },
+            {
+                $unwind: {
+                    path: "$recipient",
+                },
+            },
+            {
+                $unwind: {
+                    path: "$creator",
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    "recipient.fullname": 1,
+                    "recipient.image": 1,
+                    "recipient._id": 1,
+                    "recipient.email": 1,
+                    "recipient.phone": 1,
+                    "creator.fullname": 1,
+                    "creator.image": 1,
+                    "creator._id": 1,
+                    "creator.email": 1,
+                    "creator.phone": 1,
+                },
+            },
+        ];
 
-      const matchQuery = {
-        $or: [
-          { "creator.fullname": { $regex: searchRegex } },
-          { "creator.email": { $regex: searchRegex } },
-        ],
-      };
+        // search conversation based on the user role and search query
+        if (search && role === "creator") {
+            const searchRegex = new RegExp(search, "i");
 
-      aggregation.push({ $match: matchQuery });
-    }
+            const matchQuery = {
+                $or: [
+                    {"recipient.fullname": {$regex: searchRegex}},
+                    {"recipient.email": {$regex: searchRegex}},
+                ],
+            };
 
-    aggregation.push({
-      $sort: {
-        lastMessageSentAt: -1
-      }
-    })
+            aggregation.push({$match: matchQuery});
+        }
 
-    const conversations = await this.conversationRepository.aggregate(
-      aggregation
-    );
+        // search conversation based on the user role and search query
+        if (search && role === "consumer") {
+            const searchRegex = new RegExp(search, "i");
 
-    const refinedData = Promise.all(
-      conversations.map(async (conversation) => {
-        // count the number of the unread messages by conversation
-        const unreadMessages = await this.messagesRepository.count({
-          conversation: conversation._id,
-          author: { $ne: id },
-          unread: true,
+            const matchQuery = {
+                $or: [
+                    {"creator.fullname": {$regex: searchRegex}},
+                    {"creator.email": {$regex: searchRegex}},
+                ],
+            };
+
+            aggregation.push({$match: matchQuery});
+        }
+
+        aggregation.push({
+            $sort: {
+                lastMessageSentAt: -1,
+            },
         });
 
-        return { ...conversation, unreadMessages };
-      })
-    );
+        const conversations = await this.conversationRepository.aggregate(
+            aggregation
+        );
 
-    return refinedData;
-  }
+        const refinedData = Promise.all(
+            conversations.map(async (conversation) => {
+                // count the number of the unread messages by conversation
+                const unreadMessages = await this.messagesRepository.count({
+                    conversation: conversation._id,
+                    author: {$ne: id},
+                    unread: true,
+                });
 
-  async findById(_id: Types.ObjectId) {
-    return this.conversationRepository.findOne({ _id });
-  }
+                return {...conversation, unreadMessages};
+            })
+        );
 
-  async create(creator: User, params: createConversationDto) {
-    const recipient = await this.usersRepository.findOne({
-      _id: params.recipientId,
-    });
-    if (!recipient) {
-      throw new NotFoundException("Recipient does not exist");
+        return refinedData;
     }
 
-    if (creator._id.toString() === recipient._id.toString()) {
-      throw new BadRequestException(
-        "You cannot create conversation with yourself"
-      );
+    async findById(_id: Types.ObjectId) {
+        return this.conversationRepository.findOne({_id});
     }
 
-    const conversationExists = await this.isCreated(creator._id, recipient._id);
-    if (conversationExists) {
-      throw new BadRequestException("Conversation already in existence");
+    async create(creator: User, params: createConversationDto) {
+        const recipient = await this.usersRepository.findOne({
+            _id: params.recipientId,
+        });
+        if (!recipient) {
+            throw new NotFoundException("Recipient does not exist");
+        }
+
+        if (creator._id.toString() === recipient._id.toString()) {
+            throw new BadRequestException(
+                "You cannot create conversation with yourself"
+            );
+        }
+
+        const conversationExists = await this.isCreated(creator._id, recipient._id);
+        if (conversationExists) {
+            throw new BadRequestException("Conversation already in existence");
+        }
+
+        return await this.conversationRepository.create({
+            creator: creator._id,
+            recipient: recipient._id,
+        });
     }
 
-    const conversation = await this.conversationRepository.create({
-      creator: creator._id,
-      recipient: recipient._id,
-    });
+    async isCreated(creator: Types.ObjectId, recipient: Types.ObjectId) {
+        return this.conversationRepository.findOne({creator, recipient});
+    }
 
-    return conversation;
-  }
+    async updateOne(
+        _id: Types.ObjectId,
+        payload: UpdateQuery<Partial<Conversation>>
+    ) {
+        return this.conversationRepository.findOneAndUpdate({_id}, payload);
+    }
 
-  async isCreated(creator: Types.ObjectId, recipient: Types.ObjectId) {
-    return this.conversationRepository.findOne({ creator, recipient });
-  }
+    async readMessages(id: Types.ObjectId, recipient: Types.ObjectId) {
+        return this.messagesRepository.findOneAndUpdate(
+            {conversation: id, author: {$ne: recipient}},
+            {unread: false}
+        );
+    }
 
-  async updateOne(
-    _id: Types.ObjectId,
-    payload: UpdateQuery<Partial<Conversation>>
-  ) {
-    return this.conversationRepository.findOneAndUpdate({ _id }, payload);
-  }
+    async unreadMessages(id: Types.ObjectId, role: string) {
+        const conversations = await this.getConversations(id, role);
 
-  async readMessages(id: Types.ObjectId, recipient: Types.ObjectId) {
-    return this.messagesRepository.findOneAndUpdate(
-      { conversation: id, author: { $ne: recipient } },
-      { unread: false }
-    );
-  }
+        let count = 0;
 
-  async unreadMessages(id: Types.ObjectId, role: string) {
-    const conversations = await this.getConversations(id, role);
+        await Promise.all(conversations.map(async (conversation) => {
+            const messages = await this.messagesRepository.count({
+                conversation: conversation._id,
+                author: {$ne: id},
+                unread: false,
+            }) as number;
 
-    let count = 0;
+            count += messages;
+        }))
 
-    conversations.map(async (conversation) => {
-      const messages = await this.messagesRepository.count({
-        conversation: conversation._id,
-        author: { $ne: id },
-        unread: false,
-      });
+        return count;
+    }
 
-      count += messages;
-    });
+    async requestConsumerReview(
+        conversationId: Types.ObjectId,
+        recipientId: Types.ObjectId,
+    ) {
+        const conversationExist = (await this.conversationRepository.findOne({
+            _id: conversationId,
+        })) as any;
 
-    return count;
-  }
+        console.log(conversationExist)
+
+        if (!conversationExist) {
+            throw new NotFoundException("Conversation does not exist");
+        }
+
+        let date: any = new Date();
+        const sevenDaysAgo = date.setDate(date.getDate() - 7);
+        date = new Date(sevenDaysAgo).setHours(0, 0, 0, 0);
+        date = new Date(date);
+
+        const conversationMessages = await this.messagesRepository.find({
+            conversation: conversationId,
+            createdAt: {$gte: date},
+        });
+
+        const products = conversationMessages.map((message: any) => message?.product);
+
+        const reviewRequest = await this.reviewRequestRepository.create({
+            conversation: conversationId,
+            products,
+            creator: recipientId
+        });
+
+        const appUrl = this.configService.getOrThrow("CLIENT_URL");
+
+        const url = `${appUrl}/?reviewOpen=${true}&reviewId=${reviewRequest._id}`;
+
+        const result = await this.mailerService.sendMail({
+            to: conversationExist?.creator?.email,
+            subject: "Quick: product review request",
+            template: "review_request",
+            context: {
+                consumer: conversationExist?.creator?.fullname,
+                creator: conversationExist?.recipient?.fullname,
+                url,
+            },
+        });
+
+        this.logger.log("Review request email result", result);
+
+        return {message: "Review request sent successfully"}
+    }
 }

@@ -11,6 +11,11 @@ import { MessagesRepository } from "../messages/messages.repository";
 import { UsersRepository } from "../users/users.repository";
 import { Message, MessageSchema } from "../messages/schemas/message.schema";
 import { User, UserSchema } from "../users/schemas/user.schema";
+import { ReviewRequestsRepository } from "../reviews/review-request.repository";
+import {
+  ReviewRequest,
+  ReviewRequestSchema,
+} from "../reviews/schemas/review-request.schema";
 
 @Module({
   imports: [
@@ -27,6 +32,10 @@ import { User, UserSchema } from "../users/schemas/user.schema";
         name: User.name,
         schema: UserSchema,
       },
+      {
+        name: ReviewRequest.name,
+        schema: ReviewRequestSchema,
+      },
     ]),
   ],
   controllers: [ConversationsController],
@@ -35,6 +44,7 @@ import { User, UserSchema } from "../users/schemas/user.schema";
     ConversationRepository,
     MessagesRepository,
     UsersRepository,
+    ReviewRequestsRepository,
   ],
   exports: [ConversationsService],
 })

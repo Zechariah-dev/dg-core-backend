@@ -11,5 +11,5 @@ export class CreateReviewDto {
   rating: number;
 
   @IsString()
-  creator: string;
+  product: string;
 }
