@@ -6,7 +6,7 @@ import {
     HttpCode,
     HttpStatus,
     NotFoundException,
-    Param,
+    Param, ParseFilePipe,
     Post,
     Query,
     Req,
@@ -86,9 +86,11 @@ export class AuthController {
     })
     @ApiNotFoundResponse({description: "400, User does not exist"})
     async registerProfile(
-        @UploadedFile() file: Express.Multer.File,
         @Body() body: UserProfileRegisterDto,
-        @Param("id", ParseObjectIdPipe) id: Types.ObjectId
+        @Param("id", ParseObjectIdPipe) id: Types.ObjectId,
+        @UploadedFile(new ParseFilePipe({
+            fileIsRequired: false
+        })) file: Express.Multer.File,
     ) {
         const userExists = await this.usersService.findById(id);
 
@@ -96,9 +98,9 @@ export class AuthController {
             throw new NotFoundException("User does not exist");
         }
 
-        const location = await this.awsS3Service.uploadImage(file);
-
         const {businessName, businessAddress, ...rest} = body;
+
+        const payload = {...rest};
 
         if (userExists.role === APP_ROLES.CREATOR) {
             const businessExist = await this.businessService.findOne({creator: id});
@@ -110,9 +112,14 @@ export class AuthController {
                 {creator: id},
                 {name: businessName, address: businessAddress}
             );
+
+            if (file) {
+                const location = await this.awsS3Service.uploadImage(file);
+                Object.assign(payload, {location})
+            }
         }
 
-        const user = await this.usersService.updateProfile({_id: id}, {...rest, identificationDocument: location});
+        const user = await this.usersService.updateProfile({_id: id}, payload);
 
         await this.authService.forwardEmailVerificationMail(
             user.email,
@@ -144,7 +151,7 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @UseInterceptors(FileInterceptor("file"))
     @ApiOkResponse({
-        description: "200, Business credentials has been uploaded sucessfully",
+        description: "200, Business credentials has been uploaded successfully",
     })
     @ApiNotFoundResponse({description: "400, User does not exist"})
     async registerCacProfile(
