@@ -25,15 +25,18 @@ export class ReviewsService {
 
         const review = await this.reviewsRepository.create({...payload, creator: product.seller});
 
-        const averageRating = await this.reviewsRepository.creatorAverageRating(
-            review.creator
-        );
+        const rating = await this.reviewsRepository.creatorAverageRating(review.creator as unknown as string)
 
-        // update product rating
-        await this.usersRepository.findOneAndUpdate(
-            {_id: review.creator},
-            {rating: averageRating[0].averageRating}
-        );
+        if (rating.length > 0) {
+            const averageRating = rating[0].averageRating
+
+            // update product rating
+            await this.usersRepository.findOneAndUpdate(
+                {_id: review.creator},
+                {rating: averageRating}
+            );
+        }
+
 
         return review;
     }
@@ -63,7 +66,7 @@ export class ReviewsService {
     async submitReviewRequest(
         userId: Types.ObjectId,
         requestId: Types.ObjectId,
-        reviews: Array<{ product: string; rating: number }>
+        reviews: Array<{ product: string; rating: number, comment: string }>
     ) {
         const reviewRequest = await this.reviewRequestsRepository.findOne({_id: requestId})
 
@@ -79,13 +82,13 @@ export class ReviewsService {
                 });
 
                 if (review) {
-                    await this.reviewsRepository.findOneAndUpdate({_id: review._id}, {rating: r.rating})
+                    await this.reviewsRepository.findOneAndUpdate({_id: review._id}, {...r})
                 } else {
                     await this.reviewsRepository.create({
                         user: userId,
                         product: r.product,
                         rating: r.rating,
-                        content: "",
+                        content: r.comment || "",
                         creator: reviewRequest.creator
                     });
                 }

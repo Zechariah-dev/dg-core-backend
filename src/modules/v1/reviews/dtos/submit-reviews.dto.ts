@@ -4,5 +4,5 @@ import {IsArray, MinLength} from "class-validator";
 export class SubmitReviewsDto {
     @IsArray({ })
     @ApiProperty()
-    reviews: { product: string, rating: number }[]
+    reviews: { product: string, rating: number, comment: string }[]
 }
