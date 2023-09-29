@@ -60,6 +60,14 @@ export class ReviewsController {
         return {reviews, message: "Creator reviews was fetched successfully"};
     }
 
+    @Get("/product/:productId")
+    @HttpCode(HttpStatus.OK)
+    async getProductReviews(@Param("productId") productId: string) {
+        const reviews = await this.reviewsService.getProductReviews(productId)
+
+        return {reviews, message: "Product reviews was fetched successfully"}
+    }
+
     @Get("/user")
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({description: "200, User reviews was fetched successfully"})
@@ -98,7 +106,7 @@ export class ReviewsController {
     @Post("/request/:id")
     @HttpCode(HttpStatus.OK)
     @UseGuards(JwtAuthGuard)
-    async submitReviewRequest(@Param("id", ParseObjectIdPipe) id: Types.ObjectId, @Body() body: SubmitReviewsDto,  @Req() req: AuthRequest) {
+    async submitReviewRequest(@Param("id", ParseObjectIdPipe) id: Types.ObjectId, @Body() body: SubmitReviewsDto, @Req() req: AuthRequest) {
         return await this.reviewsService.submitReviewRequest(req.user._id, id, body.reviews)
     }
 }

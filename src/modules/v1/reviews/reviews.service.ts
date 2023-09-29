@@ -12,7 +12,7 @@ export class ReviewsService {
         private readonly reviewsRepository: ReviewsRepository,
         private readonly usersRepository: UsersRepository,
         private readonly reviewRequestsRepository: ReviewRequestsRepository,
-        private readonly  productsRepository: ProductsRepository
+        private readonly productsRepository: ProductsRepository
     ) {
     }
 
@@ -39,6 +39,10 @@ export class ReviewsService {
 
 
         return review;
+    }
+
+    async getProductReviews(product: string) {
+        return await this.reviewsRepository.find({product})
     }
 
     async fetchCreatorReviews(creator: Types.ObjectId) {
