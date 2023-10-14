@@ -1,9 +1,11 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { JwtPayload } from "./auth.interface";
 import { ConfigService } from "@nestjs/config";
 import jwt from "../../../constants/jwt";
 import { MailerService } from "@nestjs-modules/mailer";
+import { UpdatePasswordDto } from "./dtos/reset-password.dto";
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class AuthService {
@@ -12,7 +14,8 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly mailerService: MailerService
+    private readonly mailerService: MailerService,
+    private readonly usersService: UsersService
   ) { }
 
   async generateTokens(payload: JwtPayload) {
@@ -96,5 +99,26 @@ export class AuthService {
     this.logger.log("Email verification result", result);
 
     return result
+  }
+
+  async updateResetPassword(body: UpdatePasswordDto) {
+    const tokenPayload = await this.jwtService.verify(body.token, { secret: this.configService.get("JWT_SECRET"), ignoreExpiration: true })
+
+    const now = new Date()
+
+    if (tokenPayload.exp && tokenPayload.exp < now.getTime()) {
+      throw new BadRequestException("Token has expired");
+
+    }
+
+    const user = await this.usersService.findByEmail(tokenPayload.email);
+
+    if (!user) {
+      throw new UnauthorizedException("User account doesn't exist")
+    }
+
+    const updatedUser = await this.usersService.updatePassword(user._id, body.password)
+
+    return { message: "User password reset successfully", updatedUser }
   }
 }

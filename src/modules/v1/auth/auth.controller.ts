@@ -15,6 +15,7 @@ import {
     UploadedFile,
     UseGuards,
     UseInterceptors,
+    Patch
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { UserRegisterDto } from "./dtos/user-register.dto";
@@ -36,7 +37,7 @@ import {
 } from "@nestjs/swagger";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { GoogleOAuthGuard } from "../../../guards/google-oauth.guard";
-import { ResetPasswordDto } from "./dtos/reset-password.dto";
+import { ResetPasswordDto, UpdatePasswordDto } from "./dtos/reset-password.dto";
 import { CacUploadDto } from "./dtos/cac-upload.dto";
 import { AwsS3Service } from "../../../common/services/aws-s3.service";
 import { BusinessService } from "../business/business.service";
@@ -330,5 +331,14 @@ export class AuthController {
 
 
         return { message: "Password reset email sent successfully", result }
+    }
+
+    @Patch("/reset-password/update")
+    @HttpCode(HttpStatus.OK)
+    @ApiOkResponse({ description: "200, User password reset sucessfully" })
+    @ApiBadRequestResponse({ description: "400, Token has expired" })
+    @ApiUnauthorizedResponse({ description: "401, User account doesn't exist" })
+    async updatePassword(@Body() body: UpdatePasswordDto) {
+        return await this.authService.updateResetPassword(body)
     }
 }
