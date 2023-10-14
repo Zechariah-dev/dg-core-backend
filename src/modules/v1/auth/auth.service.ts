@@ -106,7 +106,7 @@ export class AuthService {
 
     const now = new Date()
 
-    if (tokenPayload.exp && tokenPayload.exp < now.getTime()) {
+    if (tokenPayload.exp && tokenPayload.exp * 1000 < now.getTime()) {
       throw new BadRequestException("Token has expired");
 
     }

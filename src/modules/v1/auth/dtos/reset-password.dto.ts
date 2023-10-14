@@ -8,12 +8,6 @@ export class ResetPasswordDto {
 }
 
 export class UpdatePasswordDto {
-  @IsEmail()
-  @IsNotEmpty()
-  @ApiProperty()
-  email: string;
-
-
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
