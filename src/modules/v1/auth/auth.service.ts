@@ -13,7 +13,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService
-  ) {}
+  ) { }
 
   async generateTokens(payload: JwtPayload) {
     const accessToken = this.jwtService.sign(payload, {
@@ -94,5 +94,7 @@ export class AuthService {
     });
 
     this.logger.log("Email verification result", result);
+
+    return result
   }
 }

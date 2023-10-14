@@ -16,15 +16,15 @@ import {
     UseGuards,
     UseInterceptors,
 } from "@nestjs/common";
-import {AuthService} from "./auth.service";
-import {UserRegisterDto} from "./dtos/user-register.dto";
-import {UsersService} from "../users/users.service";
-import {UserProfileRegisterDto} from "./dtos/user-profile-register.dto";
+import { AuthService } from "./auth.service";
+import { UserRegisterDto } from "./dtos/user-register.dto";
+import { UsersService } from "../users/users.service";
+import { UserProfileRegisterDto } from "./dtos/user-profile-register.dto";
 import ParseObjectIdPipe from "../../../pipes/parse-object-id.pipe";
-import {Types} from "mongoose";
-import {UserLoginDto} from "./dtos/user-login.dto";
+import { Types } from "mongoose";
+import { UserLoginDto } from "./dtos/user-login.dto";
 import * as bcrypt from "bcrypt";
-import {RefreshTokenDto} from "./dtos/refresh-token.dto";
+import { RefreshTokenDto } from "./dtos/refresh-token.dto";
 import {
     ApiBadRequestResponse,
     ApiCreatedResponse,
@@ -34,15 +34,15 @@ import {
     ApiUnauthorizedResponse,
     ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import {JwtAuthGuard} from "./jwt-auth.guard";
-import {GoogleOAuthGuard} from "../../../guards/google-oauth.guard";
-import {ResetPasswordDto} from "./dtos/reset-password.dto";
-import {CacUploadDto} from "./dtos/cac-upload.dto";
-import {AwsS3Service} from "../../../common/services/aws-s3.service";
-import {BusinessService} from "../business/business.service";
-import {FileInterceptor} from "@nestjs/platform-express";
-import {EventEmitter2} from "@nestjs/event-emitter";
-import {APP_ROLES} from "../../../common/interfaces/auth.interface";
+import { JwtAuthGuard } from "./jwt-auth.guard";
+import { GoogleOAuthGuard } from "../../../guards/google-oauth.guard";
+import { ResetPasswordDto } from "./dtos/reset-password.dto";
+import { CacUploadDto } from "./dtos/cac-upload.dto";
+import { AwsS3Service } from "../../../common/services/aws-s3.service";
+import { BusinessService } from "../business/business.service";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { APP_ROLES } from "../../../common/interfaces/auth.interface";
 
 @Controller("auth")
 @ApiTags("Auth")
@@ -75,7 +75,7 @@ export class AuthController {
 
         const user = await this.usersService.create(body);
 
-        return {user, message: "User account was created successfully"};
+        return { user, message: "User account was created successfully" };
     }
 
     @Post("/register/profile/:id")
@@ -84,7 +84,7 @@ export class AuthController {
     @ApiOkResponse({
         description: "200, User profile registration was completed successfully",
     })
-    @ApiNotFoundResponse({description: "400, User does not exist"})
+    @ApiNotFoundResponse({ description: "400, User does not exist" })
     async registerProfile(
         @Body() body: UserProfileRegisterDto,
         @Param("id", ParseObjectIdPipe) id: Types.ObjectId,
@@ -98,28 +98,28 @@ export class AuthController {
             throw new NotFoundException("User does not exist");
         }
 
-        const {businessName, businessAddress, ...rest} = body;
+        const { businessName, businessAddress, ...rest } = body;
 
-        const payload = {...rest};
+        const payload = { ...rest };
 
         if (userExists.role === APP_ROLES.CREATOR) {
-            const businessExist = await this.businessService.findOne({creator: id});
+            const businessExist = await this.businessService.findOne({ creator: id });
             if (!businessExist) {
                 throw new NotFoundException("Business does not exist");
             }
 
             await this.businessService.update(
-                {creator: id},
-                {name: businessName, address: businessAddress}
+                { creator: id },
+                { name: businessName, address: businessAddress }
             );
 
             if (file) {
                 const location = await this.awsS3Service.uploadImage(file);
-                Object.assign(payload, {location})
+                Object.assign(payload, { location })
             }
         }
 
-        const user = await this.usersService.updateProfile({_id: id}, payload);
+        const user = await this.usersService.updateProfile({ _id: id }, payload);
 
         await this.authService.forwardEmailVerificationMail(
             user.email,
@@ -153,7 +153,7 @@ export class AuthController {
     @ApiOkResponse({
         description: "200, Business credentials has been uploaded successfully",
     })
-    @ApiNotFoundResponse({description: "400, User does not exist"})
+    @ApiNotFoundResponse({ description: "400, User does not exist" })
     async registerCacProfile(
         @UploadedFile() file: Express.Multer.File,
         @Param("id", ParseObjectIdPipe) id: Types.ObjectId,
@@ -161,14 +161,14 @@ export class AuthController {
     ) {
         const location = await this.awsS3Service.uploadImage(file);
 
-        const businessExist = await this.businessService.findOne({creator: id});
+        const businessExist = await this.businessService.findOne({ creator: id });
         if (!businessExist) {
             throw new NotFoundException("Business does not exist");
         }
 
         await this.businessService.update(
-            {creator: id},
-            {...body, cacDocument: location}
+            { creator: id },
+            { ...body, cacDocument: location }
         );
 
         const user = await this.usersService.findById(id);
@@ -184,8 +184,8 @@ export class AuthController {
     @ApiOkResponse({
         description: "200 - user logged in successfully",
     })
-    @ApiBadRequestResponse({description: "400, Invalid credentials"})
-    @ApiUnauthorizedResponse({description: "401, Account has been deactivated"})
+    @ApiBadRequestResponse({ description: "400, Invalid credentials" })
+    @ApiUnauthorizedResponse({ description: "401, Account has been deactivated" })
     async login(@Body() body: UserLoginDto) {
         const user = await this.usersService.findByEmail(body.email);
 
@@ -216,7 +216,7 @@ export class AuthController {
             email: user.email,
         });
 
-        return {user, tokens};
+        return { user, tokens };
     }
 
     @Get("/verify-email/:token")
@@ -249,12 +249,12 @@ export class AuthController {
             }
         );
 
-        return {message: "User account verified successfully", user};
+        return { message: "User account verified successfully", user };
     }
 
     @Get("/resend-verification")
     @HttpCode(HttpStatus.OK)
-    @ApiOkResponse({description: "200, Email verification resend successfully"})
+    @ApiOkResponse({ description: "200, Email verification resend successfully" })
     async resendEmailVerification(@Query("email") email: string) {
         const userExist = await this.usersService.findByEmail(email);
 
@@ -267,7 +267,7 @@ export class AuthController {
             userExist.fullname.split(" ")[0]
         );
 
-        return {message: "Email verification resend successfully"};
+        return { message: "Email verification resend successfully" };
     }
 
     @Post("/refresh-token")
@@ -275,7 +275,7 @@ export class AuthController {
     @ApiOkResponse({
         description: "200, Tokens has been refreshed successfully",
     })
-    async refreshToken(@Body() {token}: RefreshTokenDto) {
+    async refreshToken(@Body() { token }: RefreshTokenDto) {
         const payload = await this.authService.verifyRefreshToken(token);
 
         const tokens = await this.authService.generateTokens({
@@ -283,7 +283,7 @@ export class AuthController {
             email: payload.email,
         });
 
-        return {tokens, message: "Tokens has been refreshed successfully"};
+        return { tokens, message: "Tokens has been refreshed successfully" };
     }
 
     @Get()
@@ -309,20 +309,26 @@ export class AuthController {
             email: user.email,
         });
 
-        return {message: "Google auth login successful", user, tokens};
+        return { message: "Google auth login successful", user, tokens };
     }
 
     @Post("/reset-password")
-    async resetPassword(@Body() {email}: ResetPasswordDto) {
+    @HttpCode(HttpStatus.OK)
+    @ApiOkResponse({ description: "200, Password reset email sent sucessfully" })
+    @ApiNotFoundResponse({ description: "404, User account does not exist" })
+    async resetPassword(@Body() { email }: ResetPasswordDto) {
         const userExist = await this.usersService.findByEmail(email);
 
         if (!userExist) {
             throw new NotFoundException("User account does not exist");
         }
 
-        return await this.authService.forwardPasswordResetMail(
+        const result = await this.authService.forwardPasswordResetMail(
             userExist.email,
             userExist.fullname.split(" ")[0]
         );
+
+
+        return { message: "Password reset email sent successfully", result }
     }
 }
