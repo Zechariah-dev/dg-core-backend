@@ -79,7 +79,7 @@ export class ReviewsService {
         }
         await Promise.all(
             reviews.map(async (r) => {
-                let review = await this.reviewsRepository.findOne({
+                const review = await this.reviewsRepository.findOne({
                     user: userId,
                     product: r.product,
                     creator: reviewRequest.creator

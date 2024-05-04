@@ -32,7 +32,7 @@ export class GatewaySessionManager implements IGatewaySessionManager {
   }
 
   getAdminSockets(): AuthenticatedSocket[] {
-    let sockets = [];
+    const sockets = [];
 
     const values = this.sessions.values();
     const size = this.sessions.size;
