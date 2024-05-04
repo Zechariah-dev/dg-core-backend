@@ -80,6 +80,7 @@ export class CreateProductDto {
   @IsNumber()
   @Min(1)
   @ApiProperty()
+  @IsOptional()
   quantity: number;
 
   @IsArray()
@@ -112,5 +113,5 @@ export class CreateProductDto {
 
 export class CreateProductPayload extends CreateProductDto {
   seller: Types.ObjectId;
-  store?: Types.ObjectId
+  store?: Types.ObjectId;
 }

@@ -16,6 +16,7 @@ import {
   ReviewRequest,
   ReviewRequestSchema,
 } from "../reviews/schemas/review-request.schema";
+import { MessagesService } from "../messages/messages.service";
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import {
     MessagesRepository,
     UsersRepository,
     ReviewRequestsRepository,
+    MessagesService,
   ],
   exports: [ConversationsService],
 })

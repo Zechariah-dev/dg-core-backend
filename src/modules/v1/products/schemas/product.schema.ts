@@ -41,6 +41,7 @@ export class Product extends Document {
 
   @Prop({
     type: Number,
+    required: false,
   })
   quantity: number;
 
