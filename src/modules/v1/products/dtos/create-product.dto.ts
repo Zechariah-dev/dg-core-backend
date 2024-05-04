@@ -78,7 +78,6 @@ export class CreateProductDto {
   type: string;
 
   @IsNumber()
-  @Min(1)
   @ApiProperty()
   @IsOptional()
   quantity: number;
