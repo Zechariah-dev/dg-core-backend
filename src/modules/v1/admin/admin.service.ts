@@ -7,13 +7,17 @@ import { User } from "../users/schemas/user.schema";
 import { BusinessRepository } from "../business/business.repository";
 import { ForumsRepository } from "../forums/forums.repository";
 import { UpdateForumDto } from "./dtos/update-forum.dto";
+import { MailerService } from "@nestjs-modules/mailer";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AdminService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly businessRepository: BusinessRepository,
-    private readonly forumsRepository: ForumsRepository
+    private readonly forumsRepository: ForumsRepository,
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService
   ) {}
 
   async approveCreatorAccount(_id: Types.ObjectId) {
@@ -30,6 +34,19 @@ export class AdminService {
       { _id: user.business._id },
       { isApproved: true }
     );
+
+    const appUrl = this.configService.getOrThrow("CLIENT_URL");
+    const url = `${appUrl}/login`;
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: "Account Approval",
+      template: "account_approval",
+      context: {
+        name: user.fullname.split(" ")[0],
+        url,
+      },
+    });
 
     return user;
   }
@@ -67,7 +84,23 @@ export class AdminService {
   }
 
   async approveForum(_id: Types.ObjectId, payload: UpdateForumDto) {
-    return this.forumsRepository.findOneAndUpdate({ _id }, { ...payload });
+    const forum = await this.forumsRepository.findOneAndUpdate(
+      { _id },
+      { ...payload }
+    );
+
+    const user = await this.usersRepository.findOne({ _id: forum.creator });
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: "Forum Approval",
+      template: "forum_approval",
+      context: {
+        title: forum.title,
+      },
+    });
+
+    return forum;
   }
 
   private parseFilter(query: Partial<any>): object {
